@@ -32,58 +32,7 @@ export const TESTIMONIALS = [
   }
 ];
 
-export const PRODUCTS_DATA: Product[] = [
-  {
-    id: "1",
-    name: "Strategic Branding Package",
-    description: "Full-suite branding: identity design, market positioning, and compelling brand narrative.",
-    price: 1800.00,
-    imageUrl: "https://placehold.co/400x300.png",
-    imageHint: "modern branding abstract",
-    stockStatus: "in-stock",
-    category: "Branding"
-  },
-  {
-    id: "2",
-    name: "Digital Growth Engine",
-    description: "Comprehensive SEO, targeted SMM, and high-conversion PPC campaigns.",
-    price: 2200.00,
-    imageUrl: "https://placehold.co/400x300.png",
-    imageHint: "digital analytics growth",
-    stockStatus: "in-stock",
-    category: "Digital Marketing"
-  },
-  {
-    id: "3",
-    name: "Content & Engagement Hub",
-    description: "Crafting engaging content ecosystems: blogs, videos, social media, and email marketing.",
-    price: 1200.00,
-    imageUrl: "https://placehold.co/400x300.png",
-    imageHint: "creative content team",
-    stockStatus: "in-stock",
-    category: "Content Creation"
-  },
-  {
-    id: "4",
-    name: "Social Media Amplification",
-    description: "Strategic social media management to boost brand voice, engagement, and community growth.",
-    price: 950.00,
-    imageUrl: "https://placehold.co/400x300.png",
-    imageHint: "social media connection",
-    stockStatus: "in-stock",
-    category: "Social Media"
-  },
-  {
-    id: "5",
-    name: "Marketing Masterplan Consult",
-    description: "In-depth consultation and strategy development to unlock your marketing potential.",
-    price: 350.00,
-    imageUrl: "https://placehold.co/400x300.png",
-    imageHint: "marketing strategy meeting",
-    stockStatus: "in-stock",
-    category: "Strategy"
-  },
-];
+// PRODUCTS_DATA is now fetched from Firestore. This array is removed.
 
 export const PARTNERS_DATA: Partner[] = [
   {

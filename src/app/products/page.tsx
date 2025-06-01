@@ -1,39 +1,52 @@
 
 "use client";
 
-import type { Metadata } from 'next'; // Keep for potential static metadata, though dynamic might be better
 import { useState, useEffect, useMemo } from 'react';
 import ProductCard from '@/components/ProductCard';
-import { PRODUCTS_DATA, BUSINESS_NAME } from '@/lib/constants';
 import type { Product } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, query, orderBy, Timestamp } from 'firebase/firestore';
+import { useQuery, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Skeleton } from '@/components/ui/skeleton';
 
+const fetchServices = async (): Promise<Product[]> => {
+  const servicesCollection = collection(db, 'services');
+  // Assuming you add a createdAt field for default ordering, or use product ID if numeric
+  const q = query(servicesCollection, orderBy('name', 'asc')); 
+  const servicesSnapshot = await getDocs(q);
+  return servicesSnapshot.docs.map(doc => {
+    const data = doc.data();
+    return { 
+      id: doc.id, 
+      ...data,
+      // Ensure price is a number
+      price: Number(data.price) || 0,
+    } as Product;
+  });
+};
 
-// export const metadata: Metadata = { // Static metadata, can be removed or adjusted if using dynamic
-//   title: 'Our Services',
-//   description: `Browse our wide range of marketing services at ${BUSINESS_NAME}.`,
-// };
-
-export default function ServicesPage() {
+function ServicesPageContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('default');
-  const [isMounted, setIsMounted] = useState(false);
+  const [sortBy, setSortBy] = useState('name-asc'); // Default sort by name
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const { data: productsData = [], isLoading, error } = useQuery<Product[]>({
+    queryKey: ['services'],
+    queryFn: fetchServices,
+  });
 
   const availableCategories = useMemo(() => {
-    const categories = new Set(PRODUCTS_DATA.map(p => p.category).filter(Boolean) as string[]);
-    return ['all', ...Array.from(categories)];
-  }, []);
+    if (!productsData) return ['all'];
+    const categories = new Set(productsData.map(p => p.category).filter(Boolean) as string[]);
+    return ['all', ...Array.from(categories).sort()];
+  }, [productsData]);
 
   const filteredAndSortedServices = useMemo(() => {
-    let services = [...PRODUCTS_DATA];
+    let services = [...productsData];
 
     if (searchTerm) {
       services = services.filter(service =>
@@ -56,16 +69,15 @@ export default function ServicesPage() {
       case 'name-asc':
         services.sort((a, b) => a.name.localeCompare(b.name));
         break;
+      // Add default if needed, but name-asc covers it mostly
       default:
-        // Default sort or sort by ID if needed
-        services.sort((a,b) => parseInt(a.id) - parseInt(b.id));
+        services.sort((a, b) => a.name.localeCompare(b.name));
         break;
     }
     return services;
-  }, [searchTerm, selectedCategory, sortBy]);
+  }, [searchTerm, selectedCategory, sortBy, productsData]);
 
-  if (!isMounted) {
-    // Optional: return a loading state or skeleton here
+  if (isLoading) {
     return (
       <div className="space-y-12">
         <section className="text-center pt-8">
@@ -74,8 +86,35 @@ export default function ServicesPage() {
             Loading services...
           </p>
         </section>
+        <div className="mb-8 p-6 bg-card rounded-lg shadow">
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+           </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="h-64 w-full" />
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ))}
+        </div>
       </div>
     );
+  }
+  
+  if (error) {
+    return (
+       <div className="text-center py-12">
+            <p className="text-xl text-destructive">
+              Error loading services. Please try again later.
+            </p>
+        </div>
+    )
   }
 
   return (
@@ -124,10 +163,9 @@ export default function ServicesPage() {
                 <SelectValue placeholder="Default" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="default">Default</SelectItem>
+                <SelectItem value="name-asc">Name: A to Z</SelectItem>
                 <SelectItem value="price-asc">Price: Low to High</SelectItem>
                 <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                <SelectItem value="name-asc">Name: A to Z</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -144,11 +182,21 @@ export default function ServicesPage() {
         ) : (
           <div className="text-center py-12">
             <p className="text-xl text-muted-foreground">
-              {searchTerm || selectedCategory !== 'all' ? 'No services match your criteria.' : 'No services available at the moment. Please check back later.'}
+              {searchTerm || selectedCategory !== 'all' ? 'No services match your criteria.' : 'No services available at the moment. Please check back later or add services via the admin panel.'}
             </p>
           </div>
         )}
       </section>
     </div>
+  );
+}
+
+const queryClient = new QueryClient();
+
+export default function ServicesPage() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ServicesPageContent />
+    </QueryClientProvider>
   );
 }

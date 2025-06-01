@@ -1,20 +1,45 @@
+
 import type { Metadata } from 'next';
 import HeroSection from '@/components/HeroSection';
 import PartnerLogos from '@/components/PartnerLogos';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { TrendingUp, Lightbulb, Users, CheckCircle } from 'lucide-react'; // Replaced ShieldCheck with Users
+import { TrendingUp, Lightbulb, Users } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PRODUCTS_DATA, OWNER_WHATSAPP_NUMBER, BUSINESS_NAME } from '@/lib/constants';
+import { OWNER_WHATSAPP_NUMBER, BUSINESS_NAME } from '@/lib/constants';
+import type { Product } from '@/types';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, query, orderBy, limit as firestoreLimit } from 'firebase/firestore';
 
 export const metadata: Metadata = {
   title: 'Home', 
 };
 
-export default function HomePage() {
+async function getFeaturedServices(): Promise<Product[]> {
+  try {
+    const servicesCollection = collection(db, 'services');
+    // Assuming 'createdAt' for recency or 'name' for alphabetical. Adjust as needed.
+    const q = query(servicesCollection, orderBy('name', 'asc'), firestoreLimit(3));
+    const servicesSnapshot = await getDocs(q);
+    return servicesSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return { 
+            id: doc.id, 
+            ...data,
+            price: Number(data.price) || 0, // Ensure price is a number
+        } as Product;
+    });
+  } catch (error) {
+    console.error("Error fetching featured services:", error);
+    return []; // Return empty array on error
+  }
+}
+
+export default async function HomePage() {
   const whatsappMessage = encodeURIComponent(`Hello ${BUSINESS_NAME}, I'd like to know more about your services.`);
   const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${whatsappMessage}`;
+  const featuredServices = await getFeaturedServices();
 
   const features = [
     {
@@ -28,7 +53,7 @@ export default function HomePage() {
       description: "Creative and cutting-edge marketing approaches tailored to your unique needs and market position."
     },
     {
-      icon: Users, // Changed from ShieldCheck
+      icon: Users,
       title: "Expert Team Support",
       description: "Our experienced team is dedicated to your success, providing ongoing support and expert guidance."
     }
@@ -64,35 +89,39 @@ export default function HomePage() {
       
       <section className="container mx-auto px-4">
         <h2 className="font-headline text-3xl md:text-4xl font-bold text-center mb-12 md:mb-16">Our Core Services</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {PRODUCTS_DATA.slice(0, 3).map((product) => (
-            <Card key={product.id} className="bg-card rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden group flex flex-col">
-              <div className="relative w-full h-60">
-                <Image
-                  src={product.imageUrl}
-                  alt={product.name}
-                  data-ai-hint={product.imageHint}
-                  layout="fill"
-                  objectFit="cover"
-                  className="transform transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </div>
-              <CardHeader className="flex-grow">
-                <CardTitle className="font-headline text-xl text-foreground">{product.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-muted-foreground text-sm mb-3 h-12 overflow-hidden">{product.description}</p>
-                <p className="text-2xl font-bold text-primary mb-4">${product.price.toFixed(2)}</p>
-              </CardContent>
-              <div className="p-6 pt-0">
-                <Button asChild variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg py-3">
-                  <Link href={`/products#${product.id}`}>View Details</Link>
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
+        {featuredServices.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredServices.map((product) => (
+              <Card key={product.id} className="bg-card rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden group flex flex-col">
+                <div className="relative w-full h-60">
+                  <Image
+                    src={product.imageUrl}
+                    alt={product.name}
+                    data-ai-hint={product.imageHint}
+                    layout="fill"
+                    objectFit="cover"
+                    className="transform transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                <CardHeader className="flex-grow">
+                  <CardTitle className="font-headline text-xl text-foreground">{product.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p className="text-muted-foreground text-sm mb-3 h-12 overflow-hidden">{product.description}</p>
+                  <p className="text-2xl font-bold text-primary">${product.price.toFixed(2)}</p>
+                </CardContent>
+                <div className="p-6 pt-0">
+                  <Button asChild variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg py-3">
+                    <Link href={`/products#${product.id}`}>View Details</Link>
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-muted-foreground">No services available at the moment. Please check back soon or add services via the admin panel.</p>
+        )}
         <div className="text-center mt-16">
           <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-md transition-transform hover:scale-105 rounded-lg px-10 py-3">
             <Link href="/products">See All Services</Link>
