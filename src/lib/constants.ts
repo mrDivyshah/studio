@@ -16,8 +16,8 @@ export const BUSINESS_HISTORY = "Born from a vision to redefine marketing excell
 export const BUSINESS_MISSION = "To empower businesses with transformative marketing solutions that build strong brands, engage target audiences, and drive sustainable success. We aim to be the spark that ignites our clients' potential.";
 export const BUSINESS_VALUES = "Creativity, Partnership, Transparency, Excellence, Agility.";
 
-export const SITE_HERO_IMAGE_URL = "https://placehold.co/600x600.png";
-export const SITE_HERO_IMAGE_HINT = "abstract marketing vibrant";
+export const SITE_HERO_IMAGE_URL = "https://images.unsplash.com/photo-1585128792020-803d29415281?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxob21lJTIwaGFsbHxlbnwwfHx8fDE3NDg3NjA0ODV8MA&ixlib=rb-4.1.0&q=80&w=1080";
+export const SITE_HERO_IMAGE_HINT = "home hallway";
 
 export const TESTIMONIALS = [
   {
@@ -85,3 +85,4 @@ export const NAV_LINKS = [
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
+
