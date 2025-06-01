@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Briefcase, Users, BarChart3 } from 'lucide-react';
+import { Briefcase, Users, BarChart3, Activity } from 'lucide-react'; // Added Activity icon
 import { BUSINESS_NAME } from '@/lib/constants';
 
 export const metadata: Metadata = {
@@ -37,6 +37,23 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
 
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Active Users Online
+            </CardTitle>
+            <Activity className="h-5 w-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              -- {/* Placeholder for active user count */}
+            </div>
+            <p className="text-xs text-muted-foreground pt-1">
+              Real-time data. (Integration required)
+            </p>
+          </CardContent>
+        </Card>
+        
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -80,6 +97,9 @@ export default function AdminDashboardPage() {
                 <p>
                     <strong>Data Persistence:</strong> Changes made here are for UI demonstration only and will not be saved.
                     A proper backend and database are required to manage and persist data.
+                </p>
+                 <p>
+                    <strong>Active User Count:</strong> The 'Active Users Online' card currently shows a placeholder. Real-time user tracking requires integration with an analytics service (e.g., Google Analytics) or a custom backend solution.
                 </p>
             </CardContent>
           </Card>
