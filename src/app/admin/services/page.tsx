@@ -117,7 +117,7 @@ export default function ManageServicesPage() {
     try {
       await deleteDoc(doc(db, 'services', serviceId));
       
-      if (imageUrl && !imageUrl.startsWith('https://placehold.co')) {
+      if (imageUrl && !imageUrl.startsWith('https://placehold.co') && imageUrl.includes('firebasestorage.googleapis.com')) {
         try {
           const imageRef = ref(storage, imageUrl);
           await deleteObject(imageRef);
@@ -218,6 +218,10 @@ export default function ManageServicesPage() {
               let uploadErrorDesc = "Image upload failed. Check console for details.";
               if (error.message.includes("storage/unauthorized") || error.message.includes("User does not have permission")) {
                 uploadErrorDesc = "Image upload failed: Permission denied. Check Firebase Storage security rules.";
+              } else if (error.message.includes("storage/object-not-found")) {
+                uploadErrorDesc = "Image upload failed: Object not found. This can happen if the path is incorrect or the bucket is misconfigured.";
+              } else if (error.message.toLowerCase().includes("cors")) {
+                uploadErrorDesc = "Image upload failed: CORS policy issue. Please check your Firebase Storage (Google Cloud Storage bucket) CORS configuration.";
               }
               toast({ title: "Image Upload Failed", description: uploadErrorDesc, variant: "destructive" });
               reject(error);
@@ -468,66 +472,97 @@ export default function ManageServicesPage() {
         <CardHeader>
             <CardTitle className="text-base">Developer Notes & Troubleshooting Firebase</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-xs text-muted-foreground">
+        <CardContent className="space-y-3 text-xs text-muted-foreground">
             <p>This page interacts with Firestore for service data and Firebase Storage for image uploads.</p>
-            <p className="font-semibold text-destructive">If you encounter "PERMISSION_DENIED" errors or data isn't saving/loading:</p>
-            <div className="pl-4">
-                <p><strong>1. Enable APIs in Google Cloud Console:</strong></p>
-                <ul className="list-disc list-inside pl-4">
-                    <li>Ensure <strong>Cloud Firestore API</strong> is enabled: <code className="text-xs">https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=YOUR_PROJECT_ID</code> (replace YOUR_PROJECT_ID).</li>
-                    <li>Ensure <strong>Cloud Storage for Firebase API</strong> (or similar, like <code className="text-xs">storage.googleapis.com</code>) is enabled if not already.</li>
-                </ul>
-                 <p className="mt-1"><strong>2. Check Firebase Configuration:</strong></p>
-                 <ul className="list-disc list-inside pl-4">
-                    <li>Verify that <code>src/lib/firebase.ts</code> contains your correct and complete Firebase project configuration, especially `projectId` and `storageBucket`.</li>
-                 </ul>
-                <p className="mt-1"><strong>3. Firestore Security Rules (Firestore Database &gt; Rules tab):</strong></p>
-                <p className="pl-2">These rules control who can read/write to your database. For development, you might use:</p>
-                <pre className="my-1 p-1.5 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
-{`rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // For the 'services' collection
-    match /services/{serviceId} {
-      // Allows anyone to read the services (e.g., for your public products page)
-      allow read: if true;
+            
+            <p className="font-semibold">If you encounter "PERMISSION_DENIED" errors or data isn't saving/loading:</p>
+            <div className="pl-4 space-y-2">
+                <div>
+                    <p><strong>1. Enable APIs in Google Cloud Console:</strong></p>
+                    <ul className="list-disc list-inside pl-4">
+                        <li>Ensure <strong>Cloud Firestore API</strong> is enabled for project <code>suparshwamarketing</code>: <code className="text-xs">https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=suparshwamarketing</code>.</li>
+                        <li>Ensure <strong>Cloud Storage for Firebase API</strong> (or `storage.googleapis.com`) is enabled for project <code>suparshwamarketing</code>.</li>
+                    </ul>
+                </div>
+                 <div>
+                    <p className="mt-1"><strong>2. Check Firebase Configuration:</strong></p>
+                    <ul className="list-disc list-inside pl-4">
+                        <li>Verify that <code>src/lib/firebase.ts</code> contains your correct and complete Firebase project configuration, especially `projectId`, `storageBucket`.</li>
+                    </ul>
+                 </div>
+                <div>
+                    <p className="mt-1"><strong>3. Firestore Security Rules (Firestore Database &gt; Rules tab):</strong></p>
+                    <p className="pl-2">These rules control who can read/write to your database. For development, you might use:</p>
+                    <pre className="my-1 p-1.5 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
+    {`rules_version = '2';
+    service cloud.firestore {
+      match /databases/{database}/documents {
+        // For the 'services' collection
+        match /services/{serviceId} {
+          // Allows anyone to read the services (e.g., for your public products page)
+          allow read: if true;
 
-      // Allows authenticated users to create, update, delete services.
-      // For initial development without auth, you can temporarily use: allow write: if true;
-      // IMPORTANT: Secure this with proper auth checks (e.g., admin roles) for production.
-      allow write: if request.auth != null; // Or 'if true;' for very open dev access
-    }
-    // Add rules for other collections if you have them
-  }
-}`}
-                </pre>
-                <p className="mt-1"><strong>4. Firebase Storage Security Rules (Storage &gt; Rules tab):</strong></p>
-                 <p className="pl-2">These rules control who can upload/download files. For development, for the `services_images` folder:</p>
-                <pre className="my-1 p-1.5 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
-{`rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    // Allow public read access to images in the 'services_images' folder
-    match /services_images/{allPaths=**} {
-      allow read: if true;
+          // Allows authenticated users to create, update, delete services.
+          // For initial development without auth, you can temporarily use: allow write: if true;
+          // IMPORTANT: Secure this with proper auth checks (e.g., admin roles) for production.
+          allow write: if request.auth != null; 
+          // To be very open for initial setup (less secure):
+          // allow write: if true; 
+        }
+        // Add rules for other collections if you have them
+      }
+    }`}
+                    </pre>
+                </div>
+                <div>
+                    <p className="mt-1"><strong>4. Firebase Storage Security Rules (Storage &gt; Rules tab):</strong></p>
+                    <p className="pl-2">These rules control who can upload/download files. For development, for the `services_images` folder:</p>
+                    <pre className="my-1 p-1.5 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
+    {`rules_version = '2';
+    service firebase.storage {
+      match /b/{bucket}/o {
+        // Allow public read access to images in the 'services_images' folder
+        match /services_images/{allPaths=**} {
+          allow read: if true;
 
-      // Allow authenticated users to upload images to this folder.
-      // For initial development without auth, you can temporarily use: allow write: if true;
-      // IMPORTANT: Secure this for production.
-      allow write: if request.auth != null; // Or 'if true;' for very open dev access
-    }
-    // Deny access to other paths by default if not specified
-    // match /{allPaths=**} {
-    //   allow read, write: if false;
-    // }
-  }
-}`}
-                </pre>
+          // Allow authenticated users to upload images to this folder.
+          // For initial development without auth, you can temporarily use: allow write: if true;
+          // IMPORTANT: Secure this for production.
+          allow write: if request.auth != null;
+          // To be very open for initial setup (less secure):
+          // allow write: if true; 
+        }
+      }
+    }`}
+                    </pre>
+                </div>
+                <div>
+                    <p className="mt-1 font-semibold text-destructive"><strong>5. CORS Configuration for Firebase Storage (Google Cloud Storage Bucket):</strong></p>
+                    <p className="pl-2">If uploads fail with CORS errors (Cross-Origin Resource Sharing), your Storage bucket needs to allow requests from your app's domain. This is configured on the Google Cloud Storage bucket, not directly in Firebase Storage rules.</p>
+                    <p className="pl-2">Use the `gsutil` command-line tool (part of Google Cloud SDK):</p>
+                    <ol className="list-decimal list-inside pl-6 space-y-1">
+                        <li>Create a JSON file (e.g., `cors-config.json`):
+                          <pre className="my-1 p-1.5 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
+    {`[
+      {
+        "origin": ["https://your-app-origin.com", "http://localhost:your-port"],
+        "method": ["GET", "HEAD", "PUT", "POST", "DELETE"],
+        "responseHeader": ["Content-Type", "Access-Control-Allow-Origin"],
+        "maxAgeSeconds": 3600
+      }
+    ]`}
+                          </pre>
+                          Replace `"https://your-app-origin.com"` and `"http://localhost:your-port"` with your actual domains (e.g., your Cloud Workstations URL, `http://localhost:9002`).
+                        </li>
+                        <li>Apply the config: `gsutil cors set cors-config.json gs://YOUR_BUCKET_NAME` (e.g., `gs://suparshwamarketing.appspot.com`)</li>
+                    </ol>
+                </div>
                 <strong className="text-destructive">Warning: Using `if true;` for rules is insecure and strictly for initial development. Secure your rules with proper authentication and authorization checks before deploying to production.</strong>
             </div>
-            <p className="mt-2">If saving still fails, check your browser's developer console (usually F12) for detailed error messages from Firebase. These often provide specific clues about permission issues or API configurations.</p>
+            <p className="mt-2">If saving still fails, check your browser's developer console (usually F12) for detailed error messages from Firebase. These often provide specific clues about permission issues, API configurations, or CORS problems.</p>
         </CardContent>
       </Card>
     </div>
   );
 }
+
