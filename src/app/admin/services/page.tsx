@@ -160,9 +160,11 @@ export default function ManageServicesPage() {
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      console.log("handleImageFileChange: File selected:", file.name, file.size);
       setCurrentService(prev => ({ ...prev, imageFile: file, imageUrl: undefined })); 
       setImagePreview(URL.createObjectURL(file));
     } else {
+      console.log("handleImageFileChange: No file selected or selection cancelled.");
       setCurrentService(prev => ({ ...prev, imageFile: null }));
       setImagePreview(isEditing && currentService.imageUrl ? currentService.imageUrl : initialServiceFormState.imageUrl!);
     }
@@ -177,45 +179,51 @@ export default function ManageServicesPage() {
   };
 
   const handleSubmitService = async () => {
-    console.log("handleSubmitService called. Current service state:", currentService);
+    console.log("handleSubmitService: Attempting to submit service. Current state:", currentService);
     setUploadProgress(0); 
 
     if (!currentService.name || currentService.name.trim() === "") {
       toast({ title: "Validation Error", description: "Service name is required.", variant: "destructive" });
       setUploadProgress(null);
+      console.log("handleSubmitService: Validation failed - name is required.");
       return;
     }
     if (typeof currentService.price !== 'number' || currentService.price < 0) {
       toast({ title: "Validation Error", description: "A valid, non-negative price is required.", variant: "destructive" });
       setUploadProgress(null);
+      console.log("handleSubmitService: Validation failed - price is invalid.");
       return;
     }
      if (currentService.imageFile && currentService.imageFile.size > 5 * 1024 * 1024) { // 5MB limit
       toast({ title: "Validation Error", description: "Image file size should not exceed 5MB.", variant: "destructive" });
       setUploadProgress(null);
+      console.log("handleSubmitService: Validation failed - image file too large.");
       return;
     }
 
 
     let finalImageUrl = isEditing ? currentService.imageUrl : initialServiceFormState.imageUrl;
+    console.log("handleSubmitService: Initial finalImageUrl:", finalImageUrl);
 
+    console.log("handleSubmitService: Proceeding to image upload if file exists.");
     if (currentService.imageFile) {
       const file = currentService.imageFile;
+      console.log("handleSubmitService: Image file found:", file.name, file.size, file.type);
       const storageRef = ref(storage, `services_images/${Date.now()}_${file.name}`);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
-      console.log("Starting image upload to:", storageRef.fullPath);
+      console.log("handleSubmitService: Starting image upload via uploadBytesResumable to:", storageRef.fullPath);
       try {
         await new Promise<void>((resolve, reject) => {
           uploadTask.on('state_changed',
             (snapshot) => {
               const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
               setUploadProgress(progress);
-              console.log('Upload is ' + progress + '% done');
+              console.log('handleSubmitService: Upload is ' + progress + '% done');
             },
             (error) => {
-              console.error("Image upload error: ", error);
-              let uploadErrorDesc = "Image upload failed. Check console for details.";
+              console.error("handleSubmitService: Image upload error in uploadTask.on:", error);
+              let uploadErrorDesc = "Image upload failed. Check browser console for details.";
               if (error.message.includes("storage/unauthorized") || error.message.includes("User does not have permission")) {
                 uploadErrorDesc = "Image upload failed: Permission denied. Check Firebase Storage security rules.";
               } else if (error.message.includes("storage/object-not-found")) {
@@ -227,19 +235,39 @@ export default function ManageServicesPage() {
               reject(error);
             },
             async () => {
-              finalImageUrl = await getDownloadURL(uploadTask.snapshot.ref);
-              console.log('File available at', finalImageUrl);
-              resolve();
+              try {
+                finalImageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+                console.log('handleSubmitService: File available at', finalImageUrl);
+                resolve();
+              } catch (downloadUrlError) {
+                console.error("handleSubmitService: Error getting download URL:", downloadUrlError);
+                toast({ title: "Image Upload Failed", description: "Could not get download URL after upload. Check console.", variant: "destructive" });
+                reject(downloadUrlError);
+              }
             }
           );
         });
+        console.log("handleSubmitService: Image upload promise resolved successfully.");
       } catch (error) {
+         console.error("handleSubmitService: Error during image upload promise execution or getDownloadURL:", error);
         setUploadProgress(null);
+        // Toast is typically handled by the inner error handler of uploadTask.on, but this catch is a fallback.
+        // If not already toasted, ensure user knows.
+        if (!(error && (error as any).message && (error as any).message.toLowerCase().includes("cors"))) { // Avoid double toast for CORS
+            // toast({ title: "Image Upload Error", description: "An unexpected error occurred during image upload. Check console.", variant: "destructive" });
+        }
         return; 
       }
-    } else if (!finalImageUrl && !isEditing) { 
-       finalImageUrl = initialServiceFormState.imageUrl;
+    } else {
+      console.log("handleSubmitService: No new image file to upload.");
+      if (!finalImageUrl && !isEditing) {
+         finalImageUrl = initialServiceFormState.imageUrl;
+         console.log("handleSubmitService: Using default placeholder for new service as no image was provided.");
+      } else if (isEditing && currentService.imageUrl) {
+          console.log("handleSubmitService: Retaining existing image URL for edited service:", currentService.imageUrl);
+      }
     }
+
 
     const serviceData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'> = {
       name: currentService.name!,
@@ -251,22 +279,22 @@ export default function ManageServicesPage() {
       category: currentService.category || 'Uncategorized',
     };
     
-    console.log("Service data to be saved to Firestore:", serviceData, "Is editing:", isEditing);
+    console.log("handleSubmitService: Service data to be saved to Firestore:", serviceData, "Is editing:", isEditing);
 
     try {
       if (isEditing && currentService.id) {
-        console.log("Attempting to update service with ID:", currentService.id);
+        console.log("handleSubmitService: Attempting to update service with ID:", currentService.id);
         const serviceRef = doc(db, 'services', currentService.id);
         await updateDoc(serviceRef, {...serviceData, updatedAt: Timestamp.now()});
-        console.log("Service updated successfully:", currentService.id);
+        console.log("handleSubmitService: Service updated successfully:", currentService.id);
         toast({
           title: "Service Updated",
           description: `Service "${currentService.name}" has been updated.`,
         });
       } else {
-        console.log("Attempting to add new service.");
+        console.log("handleSubmitService: Attempting to add new service.");
         const docRef = await addDoc(collection(db, 'services'), {...serviceData, createdAt: Timestamp.now(), updatedAt: Timestamp.now()});
-        console.log("Service added with ID:", docRef.id);
+        console.log("handleSubmitService: Service added with ID:", docRef.id);
         toast({
           title: "Service Added",
           description: `New service "${currentService.name}" has been added.`,
@@ -276,9 +304,8 @@ export default function ManageServicesPage() {
       setIsDialogOpen(false);
       setCurrentService(initialServiceFormState);
       setImagePreview(initialServiceFormState.imageUrl!);
-    } catch (error)
-     {
-      console.error("Error saving service to Firestore: ", error);
+    } catch (error) {
+      console.error("handleSubmitService: Error saving service to Firestore: ", error);
       let description = "Could not save service to Firestore. Check browser console for details.";
       if (error instanceof Error) {
         if (error.message.includes("PERMISSION_DENIED")) {
@@ -296,6 +323,7 @@ export default function ManageServicesPage() {
       });
     } finally {
       setUploadProgress(null);
+      console.log("handleSubmitService: Submission process finished.");
     }
   };
 
@@ -475,66 +503,60 @@ export default function ManageServicesPage() {
         <CardContent className="space-y-3 text-xs text-muted-foreground">
             <p>This page interacts with Firestore for service data and Firebase Storage for image uploads.</p>
             
-            <p className="font-semibold">If you encounter "PERMISSION_DENIED" errors or data isn't saving/loading:</p>
+            <p className="font-semibold">If you encounter "PERMISSION_DENIED" errors or data isn't saving/loading/uploading:</p>
             <div className="pl-4 space-y-2">
                 <div>
                     <p><strong>1. Enable APIs in Google Cloud Console:</strong></p>
                     <ul className="list-disc list-inside pl-4">
                         <li>Ensure <strong>Cloud Firestore API</strong> is enabled for project <code>suparshwamarketing</code>: <code className="text-xs">https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=suparshwamarketing</code>.</li>
-                        <li>Ensure <strong>Cloud Storage for Firebase API</strong> (or `storage.googleapis.com`) is enabled for project <code>suparshwamarketing</code>.</li>
+                        <li>Ensure <strong>Cloud Storage API</strong> (often listed as "Cloud Storage" or `storage.googleapis.com`) is enabled for project <code>suparshwamarketing</code>. This is separate from "Firebase Storage API" which might also exist.</li>
                     </ul>
                 </div>
                  <div>
                     <p className="mt-1"><strong>2. Check Firebase Configuration:</strong></p>
                     <ul className="list-disc list-inside pl-4">
-                        <li>Verify that <code>src/lib/firebase.ts</code> contains your correct and complete Firebase project configuration, especially `projectId`, `storageBucket`.</li>
+                        <li>Verify that <code>src/lib/firebase.ts</code> contains your correct and complete Firebase project configuration, especially `projectId` and `storageBucket` (e.g., `suparshwamarketing.appspot.com`).</li>
                     </ul>
                  </div>
                 <div>
                     <p className="mt-1"><strong>3. Firestore Security Rules (Firestore Database &gt; Rules tab):</strong></p>
-                    <p className="pl-2">These rules control who can read/write to your database. For development, you might use:</p>
+                    <p className="pl-2">These rules control who can read/write to your database. For development with authentication:</p>
                     <pre className="my-1 p-1.5 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
     {`rules_version = '2';
     service cloud.firestore {
       match /databases/{database}/documents {
         // For the 'services' collection
         match /services/{serviceId} {
-          // Allows anyone to read the services (e.g., for your public products page)
+          // Allows anyone to read the services (for your public products page)
           allow read: if true;
 
           // Allows authenticated users to create, update, delete services.
-          // For initial development without auth, you can temporarily use: allow write: if true;
-          // IMPORTANT: Secure this with proper auth checks (e.g., admin roles) for production.
-          allow write: if request.auth != null; 
-          // To be very open for initial setup (less secure):
-          // allow write: if true; 
+          // Ensure you are logged into the admin panel.
+          allow write: if request.auth != null;
         }
-        // Add rules for other collections if you have them
       }
     }`}
                     </pre>
+                     <p className="pl-2">If still testing without full auth setup on admin: <code className="text-xs">allow write: if true;</code> (Less secure, for initial dev only).</p>
                 </div>
                 <div>
                     <p className="mt-1"><strong>4. Firebase Storage Security Rules (Storage &gt; Rules tab):</strong></p>
-                    <p className="pl-2">These rules control who can upload/download files. For development, for the `services_images` folder:</p>
+                    <p className="pl-2">These rules control who can upload/download files. For development, for the `services_images` folder (ensure your authenticated admin user can write):</p>
                     <pre className="my-1 p-1.5 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
     {`rules_version = '2';
     service firebase.storage {
       match /b/{bucket}/o {
-        // Allow public read access to images in the 'services_images' folder
+        // Allow public read access to images in the 'services_images' folder for display on your site
         match /services_images/{allPaths=**} {
           allow read: if true;
 
-          // Allow authenticated users to upload images to this folder.
-          // For initial development without auth, you can temporarily use: allow write: if true;
-          // IMPORTANT: Secure this for production.
+          // Allow authenticated users (your admin) to upload images to this folder.
           allow write: if request.auth != null;
-          // To be very open for initial setup (less secure):
-          // allow write: if true; 
         }
       }
     }`}
                     </pre>
+                    <p className="pl-2">If still testing without full auth setup on admin: <code className="text-xs">allow write: if true;</code> under `services_images` (Less secure, for initial dev only).</p>
                 </div>
                 <div>
                     <p className="mt-1 font-semibold text-destructive"><strong>5. CORS Configuration for Firebase Storage (Google Cloud Storage Bucket):</strong></p>
@@ -545,24 +567,27 @@ export default function ManageServicesPage() {
                           <pre className="my-1 p-1.5 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
     {`[
       {
-        "origin": ["https://your-app-origin.com", "http://localhost:your-port"],
+        "origin": ["https://YOUR_CLOUD_WORKSTATIONS_DEV_URL", "http://localhost:9002"],
         "method": ["GET", "HEAD", "PUT", "POST", "DELETE"],
-        "responseHeader": ["Content-Type", "Access-Control-Allow-Origin"],
+        "responseHeader": ["Content-Type", "Access-Control-Allow-Origin", "x-goog-resumable"],
         "maxAgeSeconds": 3600
       }
     ]`}
                           </pre>
-                          Replace `"https://your-app-origin.com"` and `"http://localhost:your-port"` with your actual domains (e.g., your Cloud Workstations URL, `http://localhost:9002`).
+                          Replace `"https://YOUR_CLOUD_WORKSTATIONS_DEV_URL"` with your actual preview domain (e.g., from your browser's address bar when viewing the app). Include `http://localhost:9002` if you also test locally. The `x-goog-resumable` header can sometimes be important for resumable uploads.
                         </li>
                         <li>Apply the config: `gsutil cors set cors-config.json gs://YOUR_BUCKET_NAME` (e.g., `gs://suparshwamarketing.appspot.com`)</li>
+                        <li>Verify: `gsutil cors get gs://YOUR_BUCKET_NAME`</li>
                     </ol>
                 </div>
-                <strong className="text-destructive">Warning: Using `if true;` for rules is insecure and strictly for initial development. Secure your rules with proper authentication and authorization checks before deploying to production.</strong>
+                <strong className="text-destructive">Warning: Using `if true;` for rules is insecure and strictly for initial development. Secure your rules with proper authentication and authorization checks (e.g., `if request.auth != null;`) before deploying to production.</strong>
             </div>
-            <p className="mt-2">If saving still fails, check your browser's developer console (usually F12) for detailed error messages from Firebase. These often provide specific clues about permission issues, API configurations, or CORS problems.</p>
+            <p className="mt-2">If saving/uploading still fails, check your browser's developer console (usually F12) for detailed error messages from Firebase. These often provide specific clues about permission issues, API configurations, or CORS problems. Look for messages logged by "handleSubmitService:" to trace the execution flow.</p>
         </CardContent>
       </Card>
     </div>
   );
 }
 
+
+    
