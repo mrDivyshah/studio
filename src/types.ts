@@ -6,6 +6,7 @@ export interface Product {
   imageUrl: string;
   imageHint: string;
   stockStatus: "in-stock" | "out-of-stock" | "low-stock";
+  category?: string; // Added category field
 }
 
 export interface Partner {
