@@ -67,8 +67,8 @@ const AnimatedSection: React.FC<AnimatedSectionProps> = ({ children, className, 
 
 // Simulate fetching categories or define static ones
 const placeholderCategories = [
-  { id: 'cat1', name: 'Digital Marketing', imageUrl: 'https://placehold.co/400x300.png', imageHint: 'digital marketing abstract' },
-  { id: 'cat2', name: 'Branding Solutions', imageUrl: 'https://placehold.co/400x300.png', imageHint: 'branding logo design' },
+  { id: 'cat1', name: 'Digital Marketing', imageUrl: 'https://images.unsplash.com/photo-1623707430101-9e74cefe05e2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxzd2l0Y2h8ZW58MHx8fHwxNzQ4NzU5NjQwfDA&ixlib=rb-4.1.0&q=80&w=1080', imageHint: 'electrical switch' },
+  { id: 'cat2', name: 'Branding Solutions', imageUrl: 'https://images.unsplash.com/photo-1590327813360-fdbca9ec1cc6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxNHx8c3dpdGNofGVufDB8fHx8MTc0ODc1OTY0MHww&ixlib=rb-4.1.0&q=80&w=1080', imageHint: 'electrical wiring' },
   { id: 'cat3', name: 'Content Creation', imageUrl: 'https://placehold.co/400x300.png', imageHint: 'writing creativity' },
   { id: 'cat4', name: 'Web Development', imageUrl: 'https://placehold.co/400x300.png', imageHint: 'coding web design' },
 ];
