@@ -1,8 +1,8 @@
 
 "use client";
 
-import type { Metadata } from 'next'; // Keep for potential static metadata, though client components limit its direct use
-import HeroSection from '@/components/HeroSection';
+// import type { Metadata } from 'next'; // Keep for potential static metadata, though client components limit its direct use
+// import HeroSection from '@/components/HeroSection'; // Removed HeroSection import
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { TrendingUp, Lightbulb, Users, Layers, Palette, ShieldCheck } from 'lucide-react';
@@ -95,7 +95,8 @@ export default function HomePage() {
                 price: Number(data.price) || 0,
             } as Product;
         });
-      } catch (error) {
+      } catch (error)
+      {
         console.error("Error fetching featured services:", error);
         return [];
       }
@@ -143,9 +144,9 @@ export default function HomePage() {
 
   return (
     <div className="space-y-20 md:space-y-32 overflow-x-hidden">
-      <HeroSection />
+      {/* <HeroSection /> Removed HeroSection component */}
 
-      <AnimatedSection className="container mx-auto px-4">
+      <AnimatedSection className="container mx-auto px-4 pt-16"> {/* Added pt-16 for spacing since Hero is gone */}
         <div className="text-center mb-16">
           <AnimatedText 
             text="Why Partner With Us?"
@@ -250,7 +251,7 @@ export default function HomePage() {
            <AnimatedText 
             text="Ready to Ignite Your Brand's Potential?"
             el="h2"
-            className="font-headline text-3xl md:text-4xl font-bold mb-6 text-white"
+            className="font-headline text-3xl md:text-4xl font-bold mb-6 text-white" // Adjusted text color for primary background
           />
           <motion.p 
             className="text-lg text-primary-foreground/90 mb-10 max-w-2xl mx-auto"
@@ -278,3 +279,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
