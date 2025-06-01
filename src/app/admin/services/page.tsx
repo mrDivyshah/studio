@@ -62,19 +62,25 @@ export default function ManageServicesPage() {
 
   const fetchServices = async () => {
     setIsLoading(true);
+    console.log("Fetching services from Firestore...");
     try {
       const servicesCollection = collection(db, 'services');
       const q = query(servicesCollection, orderBy('createdAt', 'desc'));
       const servicesSnapshot = await getDocs(q);
       const servicesList = servicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
       setServices(servicesList);
+      console.log("Services fetched successfully:", servicesList.length, "services found.");
     } catch (error) {
       console.error("Error fetching services: ", error);
+      let description = "Could not load services. Check browser console for details.";
+      if (error instanceof Error && error.message.includes("PERMISSION_DENIED")) {
+        description = "Permission denied. Please check your Firestore security rules to allow reads from the 'services' collection. Also ensure the Firestore API is enabled for your project.";
+      } else if (error instanceof Error && (error.message.includes("firestore.googleapis.com") || error.message.includes("Cloud Firestore API") || error.message.includes("used in project") )) {
+         description = "Cloud Firestore API might not be enabled or configured correctly for this project. Please enable it in Google Cloud Console and check your Firebase config.";
+      }
       toast({
         title: "Error fetching services",
-        description: (error as Error).message.includes("PERMISSION_DENIED") 
-          ? "Permission denied. Check Firestore rules and API is enabled." 
-          : "Could not load services. Check console.",
+        description: description,
         variant: "destructive",
       });
     } finally {
@@ -111,14 +117,12 @@ export default function ManageServicesPage() {
     try {
       await deleteDoc(doc(db, 'services', serviceId));
       
-      // Attempt to delete image from Firebase Storage if URL is not a placeholder
       if (imageUrl && !imageUrl.startsWith('https://placehold.co')) {
         try {
           const imageRef = ref(storage, imageUrl);
           await deleteObject(imageRef);
           console.log("Image deleted from storage:", imageUrl);
         } catch (storageError) {
-          // Log error but don't block service deletion if image deletion fails
           console.error("Error deleting image from storage:", storageError);
           toast({
             title: "Image Deletion Note",
@@ -136,11 +140,13 @@ export default function ManageServicesPage() {
       console.log("Service deleted successfully:", serviceId);
     } catch (error) {
       console.error("Error deleting service from Firestore: ", error);
+      let description = "Could not delete service. Check browser console for details.";
+      if (error instanceof Error && error.message.includes("PERMISSION_DENIED")) {
+        description = "Permission denied. Please check your Firestore security rules to allow deletions from the 'services' collection.";
+      }
       toast({
         title: "Error deleting service",
-        description: (error as Error).message.includes("PERMISSION_DENIED") 
-          ? "Permission denied. Check Firestore rules." 
-          : "Could not delete service. Check console.",
+        description: description,
         variant: "destructive",
       });
     }
@@ -154,7 +160,7 @@ export default function ManageServicesPage() {
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setCurrentService(prev => ({ ...prev, imageFile: file, imageUrl: undefined })); // Clear old imageUrl if new file
+      setCurrentService(prev => ({ ...prev, imageFile: file, imageUrl: undefined })); 
       setImagePreview(URL.createObjectURL(file));
     } else {
       setCurrentService(prev => ({ ...prev, imageFile: null }));
@@ -172,7 +178,7 @@ export default function ManageServicesPage() {
 
   const handleSubmitService = async () => {
     console.log("handleSubmitService called. Current service state:", currentService);
-    setUploadProgress(0); // Reset/show progress indicator
+    setUploadProgress(0); 
 
     if (!currentService.name || currentService.name.trim() === "") {
       toast({ title: "Validation Error", description: "Service name is required.", variant: "destructive" });
@@ -184,6 +190,12 @@ export default function ManageServicesPage() {
       setUploadProgress(null);
       return;
     }
+     if (currentService.imageFile && currentService.imageFile.size > 5 * 1024 * 1024) { // 5MB limit
+      toast({ title: "Validation Error", description: "Image file size should not exceed 5MB.", variant: "destructive" });
+      setUploadProgress(null);
+      return;
+    }
+
 
     let finalImageUrl = isEditing ? currentService.imageUrl : initialServiceFormState.imageUrl;
 
@@ -192,6 +204,7 @@ export default function ManageServicesPage() {
       const storageRef = ref(storage, `services_images/${Date.now()}_${file.name}`);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
+      console.log("Starting image upload to:", storageRef.fullPath);
       try {
         await new Promise<void>((resolve, reject) => {
           uploadTask.on('state_changed',
@@ -202,7 +215,11 @@ export default function ManageServicesPage() {
             },
             (error) => {
               console.error("Image upload error: ", error);
-              toast({ title: "Image Upload Failed", description: error.message, variant: "destructive" });
+              let uploadErrorDesc = "Image upload failed. Check console for details.";
+              if (error.message.includes("storage/unauthorized") || error.message.includes("User does not have permission")) {
+                uploadErrorDesc = "Image upload failed: Permission denied. Check Firebase Storage security rules.";
+              }
+              toast({ title: "Image Upload Failed", description: uploadErrorDesc, variant: "destructive" });
               reject(error);
             },
             async () => {
@@ -214,13 +231,11 @@ export default function ManageServicesPage() {
         });
       } catch (error) {
         setUploadProgress(null);
-        // Toast already shown by uploadTask error handler
-        return; // Stop submission if upload failed
+        return; 
       }
-    } else if (!finalImageUrl && !isEditing) { // No file and no existing URL for a new service
-       finalImageUrl = initialServiceFormState.imageUrl; // Fallback to default placeholder
+    } else if (!finalImageUrl && !isEditing) { 
+       finalImageUrl = initialServiceFormState.imageUrl;
     }
-
 
     const serviceData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'> = {
       name: currentService.name!,
@@ -232,7 +247,7 @@ export default function ManageServicesPage() {
       category: currentService.category || 'Uncategorized',
     };
     
-    console.log("Service data to be saved:", serviceData, "Is editing:", isEditing);
+    console.log("Service data to be saved to Firestore:", serviceData, "Is editing:", isEditing);
 
     try {
       if (isEditing && currentService.id) {
@@ -257,13 +272,18 @@ export default function ManageServicesPage() {
       setIsDialogOpen(false);
       setCurrentService(initialServiceFormState);
       setImagePreview(initialServiceFormState.imageUrl!);
-    } catch (error) {
+    } catch (error)
+     {
       console.error("Error saving service to Firestore: ", error);
       let description = "Could not save service to Firestore. Check browser console for details.";
-      if ((error as Error).message.includes("PERMISSION_DENIED")) {
-        description = "Permission denied. Please check your Firestore security rules to allow writes to the 'services' collection.";
-      } else if ((error as Error).message.includes("Cloud Firestore API has not been used")) {
-        description = "Cloud Firestore API is not enabled for this project. Please enable it in Google Cloud Console.";
+      if (error instanceof Error) {
+        if (error.message.includes("PERMISSION_DENIED")) {
+          description = "Firestore Error: Permission Denied. Please check your Firestore security rules to allow writes to the 'services' collection.";
+        } else if (error.message.includes("Cloud Firestore API has not been used")) {
+          description = "Firestore Error: Cloud Firestore API is not enabled for this project. Please enable it in Google Cloud Console.";
+        } else if (error.message.includes("offline")) {
+            description = "Firestore Error: Client is offline. Please check your internet connection.";
+        }
       }
       toast({
         title: "Error saving service",
@@ -406,13 +426,13 @@ export default function ManageServicesPage() {
                   <TableRow key={service.id}>
                     <TableCell>
                       <Image 
-                        src={service.imageUrl || 'https://placehold.co/60x45.png'} // Fallback if imageUrl is missing
+                        src={service.imageUrl || 'https://placehold.co/60x45.png'} 
                         alt={service.name} 
                         width={60} 
                         height={45} 
                         className="rounded-md object-cover"
                         data-ai-hint={service.imageHint || "service item"}
-                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/60x45.png'; }} // Fallback for broken image URLs
+                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/60x45.png'; }}
                       />
                     </TableCell>
                     <TableCell className="font-medium">{service.name}</TableCell>
@@ -446,54 +466,66 @@ export default function ManageServicesPage() {
       </Card>
       <Card className="mt-8">
         <CardHeader>
-            <CardTitle className="text-base">Developer Notes & Troubleshooting</CardTitle>
+            <CardTitle className="text-base">Developer Notes & Troubleshooting Firebase</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-1 text-xs text-muted-foreground">
-            <p>This page interacts with Firestore to manage services and Firebase Storage for image uploads.</p>
-            <div>Make sure:
+        <CardContent className="space-y-2 text-xs text-muted-foreground">
+            <p>This page interacts with Firestore for service data and Firebase Storage for image uploads.</p>
+            <p className="font-semibold text-destructive">If you encounter "PERMISSION_DENIED" errors or data isn't saving/loading:</p>
+            <div className="pl-4">
+                <p><strong>1. Enable APIs in Google Cloud Console:</strong></p>
                 <ul className="list-disc list-inside pl-4">
-                    <li>Your Firebase project is configured correctly in <code>src/lib/firebase.ts</code> (with your actual credentials, including the correct <code>storageBucket</code>).</li>
-                    <li>The Cloud Firestore API is enabled for your project in Google Cloud Console.</li>
-                    <li>Firebase Storage is enabled for your project in the Firebase Console.</li>
-                    <li>You have a "services" collection in Firestore.</li>
-                    <li>
-                        Firestore security rules are set up to allow reads/writes as needed. 
-                        <strong>If you see "PERMISSION_DENIED" errors for Firestore, this is the most likely cause.</strong>
-                        <pre className="mt-1 p-1.5 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
+                    <li>Ensure <strong>Cloud Firestore API</strong> is enabled: <code className="text-xs">https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=YOUR_PROJECT_ID</code> (replace YOUR_PROJECT_ID).</li>
+                    <li>Ensure <strong>Cloud Storage for Firebase API</strong> (or similar, like <code className="text-xs">storage.googleapis.com</code>) is enabled if not already.</li>
+                </ul>
+                 <p className="mt-1"><strong>2. Check Firebase Configuration:</strong></p>
+                 <ul className="list-disc list-inside pl-4">
+                    <li>Verify that <code>src/lib/firebase.ts</code> contains your correct and complete Firebase project configuration, especially `projectId` and `storageBucket`.</li>
+                 </ul>
+                <p className="mt-1"><strong>3. Firestore Security Rules (Firestore Database &gt; Rules tab):</strong></p>
+                <p className="pl-2">These rules control who can read/write to your database. For development, you might use:</p>
+                <pre className="my-1 p-1.5 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
 {`rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /services/{document=**} { 
-      allow read, write: if request.auth != null; // Example: allow if user is authenticated
-      // For easier development (less secure): allow read, write: if true;
+    // For the 'services' collection
+    match /services/{serviceId} {
+      // Allows anyone to read the services (e.g., for your public products page)
+      allow read: if true;
+
+      // Allows authenticated users to create, update, delete services.
+      // For initial development without auth, you can temporarily use: allow write: if true;
+      // IMPORTANT: Secure this with proper auth checks (e.g., admin roles) for production.
+      allow write: if request.auth != null; // Or 'if true;' for very open dev access
     }
+    // Add rules for other collections if you have them
   }
 }`}
-                        </pre>
-                    </li>
-                     <li>
-                        Firebase Storage security rules are set up. For example, to allow authenticated users to write to a 'services_images' folder and allow public reads:
-                        <pre className="mt-1 p-1.5 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
+                </pre>
+                <p className="mt-1"><strong>4. Firebase Storage Security Rules (Storage &gt; Rules tab):</strong></p>
+                 <p className="pl-2">These rules control who can upload/download files. For development, for the `services_images` folder:</p>
+                <pre className="my-1 p-1.5 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
 {`rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    // Allow public read access to images in the 'services_images' folder
     match /services_images/{allPaths=**} {
-      allow read: if true; // Or be more restrictive
-      allow write: if request.auth != null; // Example: allow if user is authenticated
+      allow read: if true;
+
+      // Allow authenticated users to upload images to this folder.
+      // For initial development without auth, you can temporarily use: allow write: if true;
+      // IMPORTANT: Secure this for production.
+      allow write: if request.auth != null; // Or 'if true;' for very open dev access
     }
-    // For easier development (less secure):
+    // Deny access to other paths by default if not specified
     // match /{allPaths=**} {
-    //   allow read, write: if true;
+    //   allow read, write: if false;
     // }
   }
 }`}
-                        </pre>
-                         <strong className="text-destructive">Warning: Open rules are insecure and for development only. Secure your rules before production.</strong>
-                    </li>
-                    <li>Each service document should include a 'createdAt' (Timestamp) field for default sorting. 'updatedAt' (Timestamp) is used for edits.</li>
-                </ul>
+                </pre>
+                <strong className="text-destructive">Warning: Using `if true;` for rules is insecure and strictly for initial development. Secure your rules with proper authentication and authorization checks before deploying to production.</strong>
             </div>
-            <p className="mt-2">If saving fails, check your browser's developer console for error messages from Firestore or Firebase Storage. These often indicate permission issues or problems with the API/configuration.</p>
+            <p className="mt-2">If saving still fails, check your browser's developer console (usually F12) for detailed error messages from Firebase. These often provide specific clues about permission issues or API configurations.</p>
         </CardContent>
       </Card>
     </div>
