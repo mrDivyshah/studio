@@ -18,20 +18,20 @@ export default function HeroSection() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.25, // Slightly more pronounced stagger
+        staggerChildren: 0.25, 
         delayChildren: 0.3,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { y: 30, opacity: 0 }, // Start slightly lower
+    hidden: { y: 30, opacity: 0 }, 
     visible: {
       y: 0,
       opacity: 1,
       transition: {
         type: 'spring',
-        stiffness: 80,   // Slightly softer spring
+        stiffness: 80,   
         damping: 12,
       },
     },
@@ -46,11 +46,11 @@ export default function HeroSection() {
           data-ai-hint={SITE_HERO_IMAGE_HINT}
           layout="fill"
           objectFit="cover"
-          quality={80} // Increased quality
+          quality={80} 
           priority
           className="animate-pulse-slow"
         />
-        {/* Enhanced overlay for better text contrast */}
+        
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/70"></div>
       </div>
       
@@ -62,11 +62,11 @@ export default function HeroSection() {
       >
         <motion.div variants={itemVariants}>
            <AnimatedText 
-            text={BUSINESS_NAME} // Using constant
+            text={BUSINESS_NAME} 
             el="h1"
             className="font-headline text-4xl sm:text-5xl md:text-7xl font-extrabold mb-6 leading-tight text-white drop-shadow-lg"
-            wordClassName="inline-block mr-3" // For word-based animation if AnimatedText supports it, otherwise applies to each word span
-            highlightWords={BUSINESS_NAME.split(' ').slice(-1)} // Example: Highlight the last word
+            wordClassName="inline-block mr-3" 
+            highlightWords={BUSINESS_NAME.split(' ').slice(-1)} 
             highlightClassName="text-primary"
           />
         </motion.div>
@@ -87,7 +87,7 @@ export default function HeroSection() {
               Explore Our Services <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="text-white border-white hover:bg-white hover:text-primary shadow-xl transition-transform hover:scale-105 rounded-lg px-10 py-3 text-base font-semibold">
+          <Button asChild variant="outline" size="lg" className="text-accent border-white hover:bg-white hover:text-primary shadow-xl transition-transform hover:scale-105 rounded-lg px-10 py-3 text-base font-semibold">
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
               <MessageCircle className="mr-2 h-5 w-5" /> Chat on WhatsApp
             </a>
@@ -96,7 +96,7 @@ export default function HeroSection() {
       </motion.div>
        <style jsx global>{`
         @keyframes pulse-slow {
-          0%, 100% { opacity: 0.8; transform: scale(1); } /* Adjusted opacity for better base visibility */
+          0%, 100% { opacity: 0.8; transform: scale(1); } 
           50% { opacity: 1; transform: scale(1.02); }
         }
         .animate-pulse-slow {
