@@ -2,7 +2,7 @@
 "use client";
 
 // import type { Metadata } from 'next'; // Keep for potential static metadata, though client components limit its direct use
-// import HeroSection from '@/components/HeroSection'; // Removed HeroSection import
+import HeroSection from '@/components/HeroSection'; // Re-added HeroSection import
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { TrendingUp, Lightbulb, Users, Layers, Palette, ShieldCheck } from 'lucide-react';
@@ -144,9 +144,9 @@ export default function HomePage() {
 
   return (
     <div className="space-y-20 md:space-y-32 overflow-x-hidden">
-      {/* <HeroSection /> Removed HeroSection component */}
+      <HeroSection /> {/* Re-added HeroSection component */}
 
-      <AnimatedSection className="container mx-auto px-4 pt-16"> {/* Added pt-16 for spacing since Hero is gone */}
+      <AnimatedSection className="container mx-auto px-4"> {/* Removed pt-16 */}
         <div className="text-center mb-16">
           <AnimatedText 
             text="Why Partner With Us?"
