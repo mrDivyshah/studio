@@ -20,9 +20,9 @@ export default function PartnerLogos() {
                     src={partner.logoUrl}
                     alt={`${partner.name} logo`}
                     data-ai-hint={partner.logoHint}
-                    width={120} // Adjusted size
-                    height={60}  // Adjusted size
-                    objectFit="contain"
+                    width={120} 
+                    height={60}  
+                    style={{ objectFit: 'contain' }}
                     className="rounded-md"
                   />
                 </div>
