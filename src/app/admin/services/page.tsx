@@ -33,7 +33,7 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, Timestamp, query, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const initialServiceFormState: Omit<Product, 'id'> = {
+const initialServiceFormState: Omit<Product, 'id' | 'createdAt' | 'updatedAt'> = {
   name: '',
   description: '',
   price: 0,
@@ -41,7 +41,6 @@ const initialServiceFormState: Omit<Product, 'id'> = {
   imageHint: 'service placeholder',
   stockStatus: 'in-stock',
   category: 'Uncategorized',
-  // createdAt: Timestamp.now() // To be added before saving
 };
 
 export default function ManageServicesPage() {
@@ -56,7 +55,7 @@ export default function ManageServicesPage() {
     setIsLoading(true);
     try {
       const servicesCollection = collection(db, 'services');
-      const q = query(servicesCollection, orderBy('createdAt', 'desc')); // Assuming you add a createdAt field
+      const q = query(servicesCollection, orderBy('createdAt', 'desc'));
       const servicesSnapshot = await getDocs(q);
       const servicesList = servicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
       setServices(servicesList);
@@ -64,7 +63,7 @@ export default function ManageServicesPage() {
       console.error("Error fetching services: ", error);
       toast({
         title: "Error fetching services",
-        description: "Could not load services from Firestore.",
+        description: "Could not load services from Firestore. Check console for details.",
         variant: "destructive",
       });
     } finally {
@@ -93,6 +92,7 @@ export default function ManageServicesPage() {
       toast({ title: "Error", description: "Service ID is missing.", variant: "destructive" });
       return;
     }
+    console.log("Attempting to delete service with ID:", serviceId);
     try {
       await deleteDoc(doc(db, 'services', serviceId));
       setServices(prevServices => prevServices.filter(s => s.id !== serviceId));
@@ -100,11 +100,12 @@ export default function ManageServicesPage() {
         title: "Service Deleted",
         description: `Service has been removed successfully.`,
       });
+      console.log("Service deleted successfully:", serviceId);
     } catch (error) {
-      console.error("Error deleting service: ", error);
+      console.error("Error deleting service from Firestore: ", error);
       toast({
         title: "Error deleting service",
-        description: "Could not delete service from Firestore.",
+        description: "Could not delete service from Firestore. Check console for details.",
         variant: "destructive",
       });
     }
@@ -124,40 +125,57 @@ export default function ManageServicesPage() {
   };
 
   const handleSubmitService = async () => {
-    if (!currentService.name || currentService.price === undefined) {
-      toast({ title: "Validation Error", description: "Service name and price are required.", variant: "destructive" });
+    console.log("handleSubmitService called. Current service state:", currentService);
+
+    if (!currentService.name || typeof currentService.price !== 'number' || currentService.price < 0) {
+      toast({ title: "Validation Error", description: "Service name and a valid, non-negative price are required.", variant: "destructive" });
+      console.error("Validation failed:", { name: currentService.name, price: currentService.price });
       return;
     }
 
     const serviceData = {
-      ...currentService,
-      price: Number(currentService.price) || 0,
+      name: currentService.name,
+      description: currentService.description || '',
+      price: Number(currentService.price),
+      imageUrl: currentService.imageUrl || 'https://placehold.co/400x300.png',
+      imageHint: currentService.imageHint || 'service placeholder',
+      stockStatus: currentService.stockStatus || 'in-stock',
       category: currentService.category || 'Uncategorized',
     };
 
+    console.log("Service data to be saved:", serviceData, "Is editing:", isEditing);
+
     try {
       if (isEditing && currentService.id) {
+        console.log("Attempting to update service with ID:", currentService.id);
         const serviceRef = doc(db, 'services', currentService.id);
         await updateDoc(serviceRef, {...serviceData, updatedAt: Timestamp.now()});
+        console.log("Service updated successfully:", currentService.id);
         toast({
           title: "Service Updated",
           description: `Service "${currentService.name}" has been updated.`,
         });
       } else {
-        await addDoc(collection(db, 'services'), {...serviceData, createdAt: Timestamp.now()});
+        console.log("Attempting to add new service.");
+        // Ensure no 'id' field is present for new documents if currentService might have it
+        const dataForAdd = { ...serviceData };
+        // delete (dataForAdd as any).id; // This is actually not needed if currentService for new is from initialServiceFormState
+
+        const docRef = await addDoc(collection(db, 'services'), {...dataForAdd, createdAt: Timestamp.now()});
+        console.log("Service added with ID:", docRef.id);
         toast({
           title: "Service Added",
           description: `New service "${currentService.name}" has been added.`,
         });
       }
-      fetchServices(); // Refresh the list
+      fetchServices(); 
       setIsDialogOpen(false);
       setCurrentService(initialServiceFormState);
     } catch (error) {
-      console.error("Error saving service: ", error);
+      console.error("Error saving service to Firestore: ", error);
       toast({
         title: "Error saving service",
-        description: "Could not save service to Firestore.",
+        description: "Could not save service to Firestore. Check browser console for details.",
         variant: "destructive",
       });
     }
@@ -237,17 +255,18 @@ export default function ManageServicesPage() {
 
       <Card>
         {isLoading ? (
-          <div className="p-4 space-y-2">
+          <CardContent className="p-4 space-y-2">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex items-center space-x-4">
+              <div key={i} className="flex items-center space-x-4 p-2 border-b last:border-b-0">
                 <Skeleton className="h-12 w-12 rounded-md" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-[250px]" />
-                  <Skeleton className="h-4 w-[200px]" />
+                <div className="space-y-2 flex-grow">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
                 </div>
+                <Skeleton className="h-8 w-20" />
               </div>
             ))}
-          </div>
+          </CardContent>
         ) : (
           <Table>
             <TableHeader>
@@ -263,7 +282,7 @@ export default function ManageServicesPage() {
             <TableBody>
               {services.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
+                  <TableCell colSpan={6} className="text-center py-10">
                     No services found. Add new services to see them here.
                   </TableCell>
                 </TableRow>
@@ -281,7 +300,7 @@ export default function ManageServicesPage() {
                       />
                     </TableCell>
                     <TableCell className="font-medium">{service.name}</TableCell>
-                    <TableCell>${service.price.toFixed(2)}</TableCell>
+                    <TableCell>${typeof service.price === 'number' ? service.price.toFixed(2) : 'N/A'}</TableCell>
                     <TableCell>{service.category}</TableCell>
                     <TableCell>
                        <span className={`px-2 py-1 text-xs rounded-full ${
@@ -289,7 +308,7 @@ export default function ManageServicesPage() {
                           service.stockStatus === 'low-stock' ? 'bg-yellow-100 text-yellow-800' :
                           'bg-red-100 text-red-800'
                         }`}>
-                        {service.stockStatus.replace('-', ' ')}
+                        {service.stockStatus ? service.stockStatus.replace('-', ' ') : 'Unknown'}
                       </span>
                     </TableCell>
                     <TableCell className="text-right space-x-2">
@@ -317,14 +336,17 @@ export default function ManageServicesPage() {
             <p>This page now interacts with Firestore to manage services.</p>
             <div>Make sure:
                 <ul className="list-disc list-inside pl-4">
-                    <li>Your Firebase project is configured correctly in <code>src/lib/firebase.ts</code>.</li>
+                    <li>Your Firebase project is configured correctly in <code>src/lib/firebase.ts</code> (with your actual credentials).</li>
+                    <li>The Cloud Firestore API is enabled for your project in Google Cloud Console.</li>
                     <li>You have a "services" collection in Firestore.</li>
-                    <li>Firestore security rules are set up to allow reads/writes as needed (e.g., for authenticated admin users).</li>
-                    <li>Each service document should include a 'createdAt' (Timestamp) field for default sorting. Add 'updatedAt' for edits.</li>
+                    <li>Firestore security rules are set up to allow reads/writes as needed (e.g., for authenticated admin users, or open for development).</li>
+                    <li>Each service document should include a 'createdAt' (Timestamp) field for default sorting. 'updatedAt' (Timestamp) is used for edits.</li>
                 </ul>
             </div>
+            <p className="mt-2">If saving fails, check your browser's developer console for error messages from Firestore. These often indicate permission issues or problems with the API/configuration.</p>
         </CardContent>
       </Card>
     </div>
   );
 }
+
