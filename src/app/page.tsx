@@ -3,7 +3,7 @@ import HeroSection from '@/components/HeroSection';
 import PartnerLogos from '@/components/PartnerLogos';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { BarChartBig, Lightbulb, ShieldCheck, TrendingUp } from 'lucide-react'; // Replaced Zap with BarChartBig/TrendingUp
+import { TrendingUp, Lightbulb, Users, CheckCircle } from 'lucide-react'; // Replaced ShieldCheck with Users
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PRODUCTS_DATA, OWNER_WHATSAPP_NUMBER, BUSINESS_NAME } from '@/lib/constants';
@@ -16,62 +16,57 @@ export default function HomePage() {
   const whatsappMessage = encodeURIComponent(`Hello ${BUSINESS_NAME}, I'd like to know more about your services.`);
   const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${whatsappMessage}`;
 
+  const features = [
+    {
+      icon: TrendingUp,
+      title: "Results-Driven Strategies",
+      description: "We focus on delivering measurable results that help your business grow and achieve its objectives."
+    },
+    {
+      icon: Lightbulb,
+      title: "Innovative Solutions",
+      description: "Creative and cutting-edge marketing approaches tailored to your unique needs and market position."
+    },
+    {
+      icon: Users, // Changed from ShieldCheck
+      title: "Expert Team Support",
+      description: "Our experienced team is dedicated to your success, providing ongoing support and expert guidance."
+    }
+  ];
+
   return (
-    <div className="space-y-16 md:space-y-24">
+    <div className="space-y-20 md:space-y-28">
       <HeroSection />
 
       <section className="container mx-auto px-4">
-        <h2 className="font-headline text-3xl font-bold text-center mb-12">Why Choose {BUSINESS_NAME}?</h2>
-        <div className="grid md:grid-cols-3 gap-8 text-center">
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground mb-4">
-                <TrendingUp className="w-8 h-8" />
-              </div>
-              <CardTitle className="font-headline text-xl">Results-Driven Strategies</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                We focus on delivering measurable results that help your business grow.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-               <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground mb-4">
-                <Lightbulb className="w-8 h-8" />
-              </div>
-              <CardTitle className="font-headline text-xl">Innovative Solutions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Creative and cutting-edge marketing approaches tailored to your needs.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground mb-4">
-                <ShieldCheck className="w-8 h-8" />
-              </div>
-              <CardTitle className="font-headline text-xl">Expert Support</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Our experienced team is dedicated to your success and provides ongoing support.
-              </p>
-            </CardContent>
-          </Card>
+        <h2 className="font-headline text-3xl md:text-4xl font-bold text-center mb-4">Why Choose <span className="text-primary">{BUSINESS_NAME}</span>?</h2>
+        <p className="text-lg text-muted-foreground text-center mb-12 md:mb-16 max-w-2xl mx-auto">
+          Partner with us to transform your marketing efforts and achieve sustainable growth.
+        </p>
+        <div className="grid md:grid-cols-3 gap-8">
+          {features.map((feature, index) => (
+            <Card key={index} className="bg-card rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 text-center p-6 border-transparent hover:border-primary/30">
+              <CardHeader className="items-center">
+                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-6">
+                  <feature.icon className="w-8 h-8" />
+                </div>
+                <CardTitle className="font-headline text-xl font-semibold text-foreground">{feature.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </section>
 
       <PartnerLogos />
       
       <section className="container mx-auto px-4">
-        <h2 className="font-headline text-3xl font-bold text-center mb-12">Our Core Services</h2>
+        <h2 className="font-headline text-3xl md:text-4xl font-bold text-center mb-12 md:mb-16">Our Core Services</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {PRODUCTS_DATA.slice(0, 3).map((product) => (
-            <Card key={product.id} className="overflow-hidden hover:shadow-xl transition-shadow">
+            <Card key={product.id} className="bg-card rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden group flex flex-col">
               <div className="relative w-full h-60">
                 <Image
                   src={product.imageUrl}
@@ -79,35 +74,39 @@ export default function HomePage() {
                   data-ai-hint={product.imageHint}
                   layout="fill"
                   objectFit="cover"
+                  className="transform transition-transform duration-500 group-hover:scale-110"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
-              <CardHeader>
-                <CardTitle className="font-headline text-xl">{product.name}</CardTitle>
+              <CardHeader className="flex-grow">
+                <CardTitle className="font-headline text-xl text-foreground">{product.name}</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm mb-2 h-10 overflow-hidden">{product.description}</p>
-                <p className="text-lg font-semibold text-primary mb-4">${product.price.toFixed(2)}</p>
-                <Button asChild variant="outline" className="w-full">
+              <CardContent className="flex-grow">
+                <p className="text-muted-foreground text-sm mb-3 h-12 overflow-hidden">{product.description}</p>
+                <p className="text-2xl font-bold text-primary mb-4">${product.price.toFixed(2)}</p>
+              </CardContent>
+              <div className="p-6 pt-0">
+                <Button asChild variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg py-3">
                   <Link href={`/products#${product.id}`}>View Details</Link>
                 </Button>
-              </CardContent>
+              </div>
             </Card>
           ))}
         </div>
-        <div className="text-center mt-12">
-          <Button asChild size="lg">
+        <div className="text-center mt-16">
+          <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-md transition-transform hover:scale-105 rounded-lg px-10 py-3">
             <Link href="/products">See All Services</Link>
           </Button>
         </div>
       </section>
 
-      <section className="bg-primary text-primary-foreground">
-        <div className="container mx-auto px-4 py-16 text-center">
-          <h2 className="font-headline text-3xl font-bold mb-6">Ready to Elevate Your Marketing?</h2>
-          <p className="text-lg mb-8 max-w-2xl mx-auto">
-            Contact us today for a consultation or to discuss your marketing needs.
+      <section className="bg-primary text-primary-foreground rounded-xl shadow-xl">
+        <div className="container mx-auto px-4 py-16 md:py-20 text-center">
+          <h2 className="font-headline text-3xl md:text-4xl font-bold mb-6">Ready to Elevate Your Marketing?</h2>
+          <p className="text-lg text-primary-foreground/90 mb-10 max-w-2xl mx-auto">
+            Let's discuss how {BUSINESS_NAME} can help your business thrive. Contact us today for a consultation.
           </p>
-          <Button asChild variant="secondary" size="lg" className="bg-background text-foreground hover:bg-background/90 shadow-md transition-transform hover:scale-105">
+          <Button asChild variant="secondary" size="lg" className="bg-background text-foreground hover:bg-background/90 shadow-lg transition-transform hover:scale-105 rounded-lg px-10 py-3 font-semibold">
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
               Chat on WhatsApp
             </a>

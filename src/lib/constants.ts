@@ -1,74 +1,74 @@
 import type { Product, Partner } from '@/types';
 
 export const BUSINESS_NAME = "Suparshwa marketing";
-export const BUSINESS_SLOGAN = "Innovative Marketing Solutions for Growth";
-export const OWNER_WHATSAPP_NUMBER = "0987654321"; // Replace with actual number
-export const OWNER_EMAIL = "contact@suparshwamarketing.com"; // Replace with actual email
+export const BUSINESS_SLOGAN = "Creative Strategies. Measurable Results. Real Growth."; // Updated Slogan
+export const OWNER_WHATSAPP_NUMBER = "0987654321"; 
+export const OWNER_EMAIL = "contact@suparshwamarketing.com";
 
-export const OWNER_NAME = "Team Suparshwa";
-export const OWNER_BIO = "Suparshwa marketing is driven by a team of experienced marketing professionals dedicated to helping businesses achieve their goals. We believe in creative strategies and measurable results.";
+export const OWNER_NAME = "The Suparshwa Team"; // Updated
+export const OWNER_BIO = "Suparshwa Marketing is a dynamic team of creative thinkers, strategists, and digital experts passionate about helping businesses shine in a crowded marketplace. We blend innovation with data-driven insights to deliver marketing that not only looks great but also performs exceptionally."; // Updated Bio
 
-export const BUSINESS_HISTORY = "Founded with a passion for marketing, Suparshwa marketing has been empowering businesses with innovative campaigns and strategies. Our journey is marked by successful collaborations and a commitment to excellence.";
-export const BUSINESS_MISSION = "To provide cutting-edge marketing services that drive growth, enhance brand visibility, and create lasting impact for our clients. We strive to be a trusted partner in their success.";
-export const BUSINESS_VALUES = "Innovation, Client-Focus, Integrity, Results-Driven, Collaboration.";
+export const BUSINESS_HISTORY = "Born from a vision to redefine marketing excellence, Suparshwa Marketing has consistently delivered impactful campaigns and fostered significant growth for diverse clients. Our history is built on collaboration, innovation, and a relentless pursuit of exceeding expectations."; // Updated History
+export const BUSINESS_MISSION = "To empower businesses with transformative marketing solutions that build strong brands, engage target audiences, and drive sustainable success. We aim to be the spark that ignites our clients' potential."; // Updated Mission
+export const BUSINESS_VALUES = "Creativity, Partnership, Transparency, Excellence, Agility."; // Updated Values
 
 export const TESTIMONIALS = [
   {
-    quote: "Suparshwa marketing transformed our online presence. Their strategies are top-notch!",
-    name: "Alex P., CEO",
-    company: "Tech Solutions Inc."
+    quote: "Suparshwa Marketing's innovative approach and dedication skyrocketed our brand visibility. Truly exceptional!",
+    name: "Samantha B., Founder", // Updated
+    company: "EvolveX Startups" // Updated
   },
   {
-    quote: "The creativity and dedication of the Suparshwa team are impressive. They truly understand our market.",
-    name: "Maria G., Marketing Director",
-    company: "Global Goods Co."
+    quote: "The team at Suparshwa is not just skilled, they're partners who genuinely care about your success. Highly recommended!",
+    name: "David L., Marketing Head", // Updated
+    company: "Momentum Solutions" // Updated
   }
 ];
 
 export const PRODUCTS_DATA: Product[] = [
   {
     id: "1",
-    name: "Digital Marketing Package",
-    description: "Comprehensive digital marketing services including SEO, SMM, and PPC.",
-    price: 1500.00,
+    name: "Strategic Branding Package", // Updated
+    description: "Full-suite branding: identity design, market positioning, and compelling brand narrative.", // Updated
+    price: 1800.00, // Adjusted
     imageUrl: "https://placehold.co/400x300.png",
-    imageHint: "digital marketing",
+    imageHint: "modern branding abstract", // Updated hint
     stockStatus: "in-stock"
   },
   {
     id: "2",
-    name: "Branding & Identity Design",
-    description: "Craft a compelling brand identity with our expert design services.",
-    price: 800.00,
+    name: "Digital Growth Engine", // Updated
+    description: "Comprehensive SEO, targeted SMM, and high-conversion PPC campaigns.", // Updated
+    price: 2200.00, // Adjusted
     imageUrl: "https://placehold.co/400x300.png",
-    imageHint: "branding design",
+    imageHint: "digital analytics growth", // Updated hint
     stockStatus: "in-stock"
   },
   {
     id: "3",
-    name: "Content Creation Services",
-    description: "Engaging content for your website, blog, and social media channels.",
-    price: 500.00,
+    name: "Content & Engagement Hub", // Updated
+    description: "Crafting engaging content ecosystems: blogs, videos, social media, and email marketing.", // Updated
+    price: 1200.00, // Adjusted
     imageUrl: "https://placehold.co/400x300.png",
-    imageHint: "content creation",
+    imageHint: "creative content team", // Updated hint
     stockStatus: "in-stock"
   },
   {
     id: "4",
-    name: "Social Media Management",
-    description: "Strategic social media management to boost engagement and reach.",
-    price: 750.00,
+    name: "Social Media Amplification", // Updated
+    description: "Strategic social media management to boost brand voice, engagement, and community growth.", // Updated
+    price: 950.00, // Adjusted
     imageUrl: "https://placehold.co/400x300.png",
-    imageHint: "social media",
+    imageHint: "social media connection", // Updated hint
     stockStatus: "in-stock"
   },
   {
     id: "5",
-    name: "Marketing Consultation",
-    description: "Expert consultation to refine your marketing strategy.",
-    price: 250.00,
+    name: "Marketing Masterplan Consult", // Updated
+    description: "In-depth consultation and strategy development to unlock your marketing potential.", // Updated
+    price: 350.00, // Adjusted
     imageUrl: "https://placehold.co/400x300.png",
-    imageHint: "marketing consultation",
+    imageHint: "marketing strategy meeting", // Updated hint
     stockStatus: "in-stock"
   },
 ];
@@ -76,51 +76,51 @@ export const PRODUCTS_DATA: Product[] = [
 export const PARTNERS_DATA: Partner[] = [
   {
     id: "1",
-    name: "Creative Design Studios",
+    name: "Pixel Perfect Designs", // Updated
     logoUrl: "https://placehold.co/200x100.png",
-    logoHint: "design studio logo",
-    description: "Experts in visual communication and brand aesthetics."
+    logoHint: "modern design agency", // Updated hint
+    description: "Crafting stunning visuals that captivate and convert." // Updated
   },
   {
     id: "2",
-    name: "Analytics Experts Inc.",
+    name: "DataDriven Insights Co.", // Updated
     logoUrl: "https://placehold.co/200x100.png",
-    logoHint: "analytics logo",
-    description: "Providing data-driven insights for marketing success."
+    logoHint: "analytics chart logo", // Updated hint
+    description: "Unlocking the power of data for smarter marketing decisions." // Updated
   },
   {
     id: "3",
-    name: "Tech Innovators Co.",
+    name: "Innovatech Solutions", // Updated
     logoUrl: "https://placehold.co/200x100.png",
-    logoHint: "technology logo",
-    description: "Pioneering technology solutions for modern marketing."
+    logoHint: "tech startup logo", // Updated hint
+    description: "Pioneering tech solutions for next-gen marketing." // Updated
   },
   {
     id: "4",
-    name: "Global Reach Networks",
+    name: "Connect Global Media", // Updated
     logoUrl: "https://placehold.co/200x100.png",
-    logoHint: "network logo",
-    description: "Expanding your market presence worldwide."
+    logoHint: "global network logo", // Updated hint
+    description: "Expanding your brand's reach across global platforms." // Updated
   }
 ];
 
 export const BUSINESS_HOURS = {
-  MonSat: "9:00 AM – 6:00 PM",
+  MonSat: "9:30 AM – 6:30 PM", // Slightly adjusted
   Sun: "Closed"
 };
 
-export const BUSINESS_ADDRESS_LINE1 = "456 Marketing Drive";
-export const BUSINESS_ADDRESS_LINE2 = "Innovation City, MC 67890";
-export const BUSINESS_PHONE = "+1 (555) 987-6543";
-export const BUSINESS_EMAIL = "info@suparshwamarketing.com";
+export const BUSINESS_ADDRESS_LINE1 = "789 Innovation Avenue"; // Updated
+export const BUSINESS_ADDRESS_LINE2 = "Creativity City, MC 10101"; // Updated
+export const BUSINESS_PHONE = "+1 (555) 123-0000"; // Updated
+export const BUSINESS_EMAIL = "hello@suparshwamarketing.com"; // Updated
 
-export const BUSINESS_LOCATION_COORDS = { lat: 37.774929, lng: -122.419416 }; // Example: San Francisco
+export const BUSINESS_LOCATION_COORDS = { lat: 34.052235, lng: -118.243683 }; // Example: Los Angeles
 
 export const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "YOUR_GOOGLE_MAPS_API_KEY_PLACEHOLDER";
 
 export const NAV_LINKS = [
   { href: "/", label: "Home" },
-  { href: "/products", label: "Services" }, // Changed Products to Services
-  { href: "/about", label: "About Us" },
+  { href: "/products", label: "Services" }, 
+  { href: "/about", label: "About" }, // Shortened
   { href: "/contact", label: "Contact" },
 ];

@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     template: `%s | ${BUSINESS_NAME}`,
   },
   description: BUSINESS_SLOGAN,
-  keywords: ['marketing agency', 'digital marketing', 'suparshwa marketing', 'branding', 'seo', 'social media'],
+  keywords: ['marketing agency', 'digital marketing', 'suparshwa marketing', 'branding', 'seo', 'social media', 'modern design'],
   authors: [{ name: `${BUSINESS_NAME} Team` }],
   openGraph: {
     title: BUSINESS_NAME,
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     siteName: BUSINESS_NAME,
     // images: [ 
     //   {
-    //     url: `${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`, // Consider adding a specific OG image
+    //     url: `${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`,
     //     width: 1200,
     //     height: 630,
     //     alt: BUSINESS_NAME,
@@ -44,12 +44,12 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased flex flex-col min-h-screen">
+      <body className="font-body antialiased flex flex-col min-h-screen bg-background">
         <Header />
-        <main className="flex-grow container mx-auto px-4 py-8">
+        <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
           {children}
         </main>
         <Footer />

@@ -18,7 +18,7 @@ export default {
     extend: {
       fontFamily: {
         body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
+        headline: ['Poppins', 'sans-serif'], // Changed to Poppins
         code: ['Source Code Pro', 'monospace'],
       },
       colors: {
@@ -77,6 +77,8 @@ export default {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+        xl: 'calc(var(--radius) + 4px)', // Added for more rounded elements
+        '2xl': 'calc(var(--radius) + 8px)', // Added for even more rounded elements
       },
       keyframes: {
         'accordion-down': {
