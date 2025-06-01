@@ -247,16 +247,15 @@ export default function ManageServicesPage() {
             </CardHeader>
             <CardContent className="space-y-1 text-xs text-muted-foreground">
                 <p>This page is a UI demonstration. Data modifications (add, edit, delete) are only reflected in the local component state and are not persisted.</p>
-                <p>To make this functional, you would need to:
+                <div>To make this functional, you would need to:
                     <ul className="list-disc list-inside pl-4">
                         <li>Implement backend APIs (e.g., using Next.js API Routes or a separate backend service).</li>
                         <li>Connect to a database (e.g., Firestore, PostgreSQL, MongoDB) to store and manage service data.</li>
                         <li>Secure the admin routes and API endpoints with authentication and authorization.</li>
                     </ul>
-                </p>
+                </div>
             </CardContent>
         </Card>
     </div>
   );
 }
-
