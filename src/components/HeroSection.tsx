@@ -18,20 +18,20 @@ export default function HeroSection() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.25, 
+        staggerChildren: 0.2, // Slightly faster stagger
         delayChildren: 0.3,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { y: 30, opacity: 0 }, 
+    hidden: { y: 30, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
       transition: {
         type: 'spring',
-        stiffness: 80,   
+        stiffness: 90, // Slightly quicker, less springy
         damping: 12,
       },
     },
@@ -46,14 +46,15 @@ export default function HeroSection() {
           data-ai-hint={SITE_HERO_IMAGE_HINT}
           layout="fill"
           objectFit="cover"
-          quality={80} 
+          quality={80}
           priority
           className="animate-pulse-slow"
         />
-        
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/70"></div>
+
+        {/* Darker gradient overlay for better contrast */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/80"></div>
       </div>
-      
+
       <motion.div
         className="container mx-auto px-4 relative z-10 text-center"
         variants={containerVariants}
@@ -61,24 +62,24 @@ export default function HeroSection() {
         animate="visible"
       >
         <motion.div variants={itemVariants}>
-           <AnimatedText 
-            text={BUSINESS_NAME} 
+           <AnimatedText
+            text={BUSINESS_NAME}
             el="h1"
             className="font-headline text-4xl sm:text-5xl md:text-7xl font-extrabold mb-6 leading-tight text-white drop-shadow-lg"
-            wordClassName="inline-block mr-3" 
-            highlightWords={BUSINESS_NAME.split(' ').slice(-1)} 
+            wordClassName="inline-block mr-3"
+            highlightWords={BUSINESS_NAME.split(' ').slice(-1)}
             highlightClassName="text-primary"
           />
         </motion.div>
 
-        <motion.p 
+        <motion.p
           className="text-lg md:text-xl text-slate-200 mb-10 max-w-2xl mx-auto drop-shadow-md"
           variants={itemVariants}
         >
           {BUSINESS_SLOGAN}
         </motion.p>
 
-        <motion.div 
+        <motion.div
           className="flex flex-col sm:flex-row justify-center items-center gap-4"
           variants={itemVariants}
         >
@@ -87,7 +88,8 @@ export default function HeroSection() {
               Explore Our Services <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="text-accent border-white hover:bg-white hover:text-primary shadow-xl transition-transform hover:scale-105 rounded-lg px-10 py-3 text-base font-semibold">
+          {/* Updated WhatsApp button to secondary variant */}
+          <Button asChild variant="secondary" size="lg" className="shadow-xl transition-transform hover:scale-105 rounded-lg px-10 py-3 text-base font-semibold">
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
               <MessageCircle className="mr-2 h-5 w-5" /> Chat on WhatsApp
             </a>
@@ -96,7 +98,7 @@ export default function HeroSection() {
       </motion.div>
        <style jsx global>{`
         @keyframes pulse-slow {
-          0%, 100% { opacity: 0.8; transform: scale(1); } 
+          0%, 100% { opacity: 0.8; transform: scale(1); }
           50% { opacity: 1; transform: scale(1.02); }
         }
         .animate-pulse-slow {
