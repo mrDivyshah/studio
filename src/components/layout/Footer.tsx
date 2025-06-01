@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BUSINESS_NAME, BUSINESS_HOURS, BUSINESS_ADDRESS_LINE1, BUSINESS_ADDRESS_LINE2, BUSINESS_PHONE, BUSINESS_EMAIL, NAV_LINKS } from '@/lib/constants';
+import { BUSINESS_NAME, BUSINESS_HOURS, BUSINESS_ADDRESS_LINE1, BUSINESS_ADDRESS_LINE2, BUSINESS_PHONE, OWNER_EMAIL, NAV_LINKS } from '@/lib/constants';
 import { Clock, MapPin, Phone, Mail } from 'lucide-react';
 
 export default function Footer() {
@@ -38,7 +38,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 mr-2 shrink-0 text-primary" />
-                <a href={`mailto:${BUSINESS_EMAIL}`} className="hover:text-primary">{BUSINESS_EMAIL}</a>
+                <a href={`mailto:${OWNER_EMAIL}`} className="hover:text-primary">{OWNER_EMAIL}</a>
               </li>
               <li className="flex items-start mt-2">
                 <Clock className="h-5 w-5 mr-2 mt-0.5 shrink-0 text-primary" />

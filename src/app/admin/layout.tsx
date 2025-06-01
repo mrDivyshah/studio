@@ -1,7 +1,7 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Home, Briefcase, Settings, Palette } from 'lucide-react'; // Added Palette
+import { Home, Briefcase, Settings, Palette, FileText } from 'lucide-react'; // Added Palette, FileText
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { BUSINESS_NAME } from '@/lib/constants';
@@ -34,6 +34,12 @@ export default function AdminLayout({
             <Link href="/admin">
               <Home className="mr-2 h-4 w-4" />
               Dashboard
+            </Link>
+          </Button>
+          <Button variant="ghost" className="justify-start" asChild>
+            <Link href="/admin/content">
+              <FileText className="mr-2 h-4 w-4" />
+              Site Content
             </Link>
           </Button>
           <Button variant="ghost" className="justify-start" asChild>

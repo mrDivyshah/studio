@@ -1,6 +1,7 @@
+
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import { OWNER_NAME, OWNER_BIO, BUSINESS_HISTORY, BUSINESS_MISSION, BUSINESS_VALUES, TESTIMONIALS, BUSINESS_NAME } from '@/lib/constants';
+import { OWNER_NAME, OWNER_BIO, BUSINESS_HISTORY, BUSINESS_MISSION, BUSINESS_VALUES, TESTIMONIALS, BUSINESS_NAME, OWNER_IMAGE_URL, OWNER_IMAGE_HINT } from '@/lib/constants';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Star, CheckCircle } from 'lucide-react';
 
@@ -62,9 +63,9 @@ export default function AboutPage() {
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8 max-w-4xl mx-auto bg-card p-8 rounded-lg shadow-xl">
             <div className="relative w-48 h-48 md:w-56 md:h-56 rounded-full overflow-hidden shadow-md shrink-0">
               <Image
-                src="https://placehold.co/300x300.png" // Generic placeholder for team/founder
+                src={OWNER_IMAGE_URL}
                 alt={`Photo of ${OWNER_NAME}`}
-                data-ai-hint="team photo professional"
+                data-ai-hint={OWNER_IMAGE_HINT}
                 layout="fill"
                 objectFit="cover"
               />

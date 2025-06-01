@@ -1,6 +1,7 @@
+
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { BUSINESS_NAME, BUSINESS_SLOGAN, OWNER_WHATSAPP_NUMBER } from '@/lib/constants';
+import { BUSINESS_NAME, BUSINESS_SLOGAN, OWNER_WHATSAPP_NUMBER, SITE_HERO_IMAGE_URL, SITE_HERO_IMAGE_HINT } from '@/lib/constants';
 import { ArrowRight, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 
@@ -37,9 +38,9 @@ export default function HeroSection() {
             <div className="absolute inset-0 bg-primary/10 rounded-full blur-3xl opacity-50 animate-pulse"></div>
             <div className="relative w-full max-w-md md:max-w-lg aspect-square rounded-2xl overflow-hidden shadow-2xl transform transition-all duration-500 hover:scale-105">
               <Image
-                src="https://placehold.co/600x600.png" 
+                src={SITE_HERO_IMAGE_URL} 
                 alt="Modern marketing concepts"
-                data-ai-hint="abstract marketing vibrant" 
+                data-ai-hint={SITE_HERO_IMAGE_HINT} 
                 layout="fill"
                 objectFit="cover"
                 quality={85}

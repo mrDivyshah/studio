@@ -1,7 +1,8 @@
+
 import type { Metadata } from 'next';
 import ContactForm from '@/components/ContactForm';
 import MapEmbed from '@/components/MapEmbed';
-import { BUSINESS_HOURS, BUSINESS_ADDRESS_LINE1, BUSINESS_ADDRESS_LINE2, BUSINESS_PHONE, BUSINESS_EMAIL, BUSINESS_NAME } from '@/lib/constants';
+import { BUSINESS_HOURS, BUSINESS_ADDRESS_LINE1, BUSINESS_ADDRESS_LINE2, BUSINESS_PHONE, OWNER_EMAIL, BUSINESS_NAME } from '@/lib/constants';
 import { Clock, MapPin, Phone, Mail } from 'lucide-react';
 import { Suspense } from 'react';
 
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default function ContactPage({ searchParams }: { searchParams?: { product?: string }}) {
-  const productName = searchParams?.product; // Changed from 'product' to 'service' for marketing context
+  const productName = searchParams?.product; 
   const inquirySubject = productName || "our services";
 
 
@@ -51,7 +52,7 @@ export default function ContactPage({ searchParams }: { searchParams?: { product
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 mr-3 shrink-0 text-primary" />
-                <a href={`mailto:${BUSINESS_EMAIL}`} className="hover:text-primary">{BUSINESS_EMAIL}</a>
+                <a href={`mailto:${OWNER_EMAIL}`} className="hover:text-primary">{OWNER_EMAIL}</a>
               </li>
             </ul>
           </div>
@@ -71,3 +72,4 @@ export default function ContactPage({ searchParams }: { searchParams?: { product
     </div>
   );
 }
+
