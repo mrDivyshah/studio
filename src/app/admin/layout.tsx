@@ -1,7 +1,7 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Home, Briefcase, Settings } from 'lucide-react';
+import { Home, Briefcase, Settings, Palette } from 'lucide-react'; // Added Palette
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { BUSINESS_NAME } from '@/lib/constants';
@@ -40,6 +40,12 @@ export default function AdminLayout({
             <Link href="/admin/services">
               <Briefcase className="mr-2 h-4 w-4" />
               Manage Services
+            </Link>
+          </Button>
+          <Button variant="ghost" className="justify-start" asChild>
+            <Link href="/admin/appearance">
+              <Palette className="mr-2 h-4 w-4" />
+              Appearance
             </Link>
           </Button>
           {/* Add more admin navigation links here */}
