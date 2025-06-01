@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import Header from '@/components/layout/Header';
@@ -39,6 +40,30 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // This is a simplified check. In a real app, this would involve route inspection
+  // and potentially a more sophisticated way to determine if the current route is part of the admin area.
+  const isActuallyAdminRoute = (children as React.ReactElement)?.props?.childProp?.segment === 'admin';
+
+  // If it's an admin route, we don't render the main Header and Footer
+  if (isActuallyAdminRoute) {
+    return (
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+          <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet" />
+        </head>
+        <body className="font-body antialiased bg-background text-foreground">
+            {children}
+          <Toaster />
+          <SpeedInsights />
+          <Analytics />
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -60,3 +85,4 @@ export default function RootLayout({
     </html>
   );
 }
+
