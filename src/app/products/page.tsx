@@ -16,12 +16,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 const fetchServices = async (): Promise<Product[]> => {
   const servicesCollection = collection(db, 'services');
   // Assuming you add a createdAt field for default ordering, or use product ID if numeric
-  const q = query(servicesCollection, orderBy('name', 'asc')); 
+  const q = query(servicesCollection, orderBy('name', 'asc'));
   const servicesSnapshot = await getDocs(q);
   return servicesSnapshot.docs.map(doc => {
     const data = doc.data();
-    return { 
-      id: doc.id, 
+    return {
+      id: doc.id,
       ...data,
       // Ensure price is a number
       price: Number(data.price) || 0,
@@ -106,15 +106,38 @@ function ServicesPageContent() {
       </div>
     );
   }
-  
+
   if (error) {
+    let errorMessage = "Error loading services. Please try again later.";
+    if (error instanceof Error && error.message.includes("PERMISSION_DENIED")) {
+        errorMessage = "Error loading services: Permission Denied. This usually means Firestore security rules are blocking access, or the Firestore API is not fully enabled/propagated for your project.";
+    } else if (error instanceof Error && (error.message.includes("firestore.googleapis.com") || error.message.includes("Cloud Firestore API"))) {
+        errorMessage = "Error loading services: Could not connect to Firestore. Please ensure the API is enabled in your Google Cloud project and your internet connection is stable. Check the browser console for more details.";
+    } else if (error instanceof Error) {
+        errorMessage = `Error loading services: ${error.message}. Check browser console for more details.`;
+    }
+    // Log the full error to the console for detailed debugging
+    console.error("Service fetching error details:", error);
+
     return (
        <div className="text-center py-12">
             <p className="text-xl text-destructive">
-              Error loading services. Please try again later.
+              {errorMessage}
+            </p>
+            <p className="text-sm text-muted-foreground mt-4">
+              Please check your browser's developer console (usually F12) for more specific error messages from Firebase.
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Common solutions involve verifying:
+              <ul className="list-disc list-inside mt-1">
+                <li>Cloud Firestore API is enabled for your project in Google Cloud Console.</li>
+                <li>Firestore security rules allow read access to the 'services' collection.</li>
+                <li>Your Firebase configuration in <code>src/lib/firebase.ts</code> is correct.</li>
+                <li>You have a stable internet connection.</li>
+              </ul>
             </p>
         </div>
-    )
+    );
   }
 
   return (
