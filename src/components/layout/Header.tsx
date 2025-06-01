@@ -1,7 +1,7 @@
+
 "use client";
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -9,41 +9,44 @@ import { useState } from 'react';
 import { BUSINESS_NAME, NAV_LINKS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
+import FreebirdLogoIcon from '@/components/icons/FreebirdLogoIcon';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/20 bg-background supports-[backdrop-filter]:bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2 group" onClick={() => setIsMobileMenuOpen(false)}>
-          <Image 
-            src="/logo.png" 
-            alt={`${BUSINESS_NAME} logo`} 
-            width={50} 
-            height={50}
-            className="h-10 w-auto md:h-12 group-hover:opacity-80 transition-opacity"
-            priority 
-          />
-          <span className="font-headline text-xl font-bold text-foreground group-hover:text-primary transition-colors hidden sm:inline">{BUSINESS_NAME}</span>
+          <FreebirdLogoIcon className="h-8 w-8 text-primary group-hover:text-primary/80 transition-colors" />
+          <span className="font-headline text-2xl font-bold text-foreground group-hover:text-primary/80 transition-colors">{BUSINESS_NAME}</span>
         </Link>
 
-        <nav className="hidden md:flex items-center space-x-2 lg:space-x-4">
+        <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
                 "text-sm font-medium transition-colors hover:text-primary px-3 py-2 rounded-md",
-                pathname === link.href ? "text-primary font-semibold" : "text-muted-foreground"
+                pathname === link.href ? "text-primary font-semibold" : "text-foreground/70 hover:text-foreground"
               )}
             >
               {link.label}
             </Link>
           ))}
-           <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-md ml-2">
-             <Link href="/contact">Contact Us</Link>
+          <Link
+              href="/login"
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-primary px-3 py-2 rounded-md",
+                pathname === "/login" ? "text-primary font-semibold" : "text-foreground/70 hover:text-foreground"
+              )}
+            >
+              Login In
+          </Link>
+           <Button asChild variant="outline" className="ml-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+             <Link href="/signup">Sign Up</Link>
            </Button>
         </nav>
 
@@ -57,16 +60,10 @@ export default function Header() {
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[360px] p-0 bg-background text-foreground">
               <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between p-4 border-b border-border/50">
+                <div className="flex items-center justify-between p-4 border-b">
                    <Link href="/" className="flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Image 
-                      src="/logo.png" 
-                      alt={`${BUSINESS_NAME} logo`} 
-                      width={40} 
-                      height={40} 
-                      className="h-10 w-auto"
-                    />
-                    <span className="font-headline text-lg font-bold text-primary">{BUSINESS_NAME}</span>
+                    <FreebirdLogoIcon className="h-7 w-7 text-primary" />
+                    <span className="font-headline text-xl font-bold text-primary">{BUSINESS_NAME}</span>
                   </Link>
                   <SheetClose asChild>
                      <Button variant="ghost" size="icon">
@@ -81,8 +78,8 @@ export default function Header() {
                       <Link
                         href={link.href}
                         className={cn(
-                          "text-lg font-medium transition-colors hover:text-primary py-3 px-3 rounded-md",
-                           pathname === link.href ? "bg-primary/10 text-primary font-semibold" : "text-foreground hover:bg-muted/50"
+                          "text-lg font-medium transition-colors hover:bg-muted py-3 px-3 rounded-md",
+                           pathname === link.href ? "bg-muted text-primary font-semibold" : "text-foreground hover:bg-muted/50"
                         )}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -91,8 +88,20 @@ export default function Header() {
                     </SheetClose>
                   ))}
                   <SheetClose asChild>
-                    <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-md mt-4 w-full py-3 text-lg">
-                      <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</Link>
+                     <Link
+                        href="/login"
+                        className={cn(
+                          "text-lg font-medium transition-colors hover:bg-muted py-3 px-3 rounded-md",
+                           pathname === "/login" ? "bg-muted text-primary font-semibold" : "text-foreground hover:bg-muted/50"
+                        )}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Login In
+                      </Link>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Button asChild variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground mt-4 w-full py-3 text-lg">
+                      <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)}>Sign Up</Link>
                     </Button>
                   </SheetClose>
                 </nav>
