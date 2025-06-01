@@ -63,7 +63,9 @@ export default function ManageServicesPage() {
       console.error("Error fetching services: ", error);
       toast({
         title: "Error fetching services",
-        description: "Could not load services from Firestore. Check console for details.",
+        description: (error as Error).message.includes("PERMISSION_DENIED") 
+          ? "Permission denied. Check Firestore rules and API is enabled." 
+          : "Could not load services. Check console.",
         variant: "destructive",
       });
     } finally {
@@ -105,7 +107,9 @@ export default function ManageServicesPage() {
       console.error("Error deleting service from Firestore: ", error);
       toast({
         title: "Error deleting service",
-        description: "Could not delete service from Firestore. Check console for details.",
+        description: (error as Error).message.includes("PERMISSION_DENIED") 
+          ? "Permission denied. Check Firestore rules." 
+          : "Could not delete service. Check console.",
         variant: "destructive",
       });
     }
@@ -127,11 +131,15 @@ export default function ManageServicesPage() {
   const handleSubmitService = async () => {
     console.log("handleSubmitService called. Current service state:", currentService);
 
-    if (!currentService.name || typeof currentService.price !== 'number' || currentService.price < 0) {
-      toast({ title: "Validation Error", description: "Service name and a valid, non-negative price are required.", variant: "destructive" });
-      console.error("Validation failed:", { name: currentService.name, price: currentService.price });
+    if (!currentService.name || currentService.name.trim() === "") {
+      toast({ title: "Validation Error", description: "Service name is required.", variant: "destructive" });
       return;
     }
+     if (typeof currentService.price !== 'number' || currentService.price < 0) {
+      toast({ title: "Validation Error", description: "A valid, non-negative price is required.", variant: "destructive" });
+      return;
+    }
+
 
     const serviceData = {
       name: currentService.name,
@@ -157,11 +165,7 @@ export default function ManageServicesPage() {
         });
       } else {
         console.log("Attempting to add new service.");
-        // Ensure no 'id' field is present for new documents if currentService might have it
-        const dataForAdd = { ...serviceData };
-        // delete (dataForAdd as any).id; // This is actually not needed if currentService for new is from initialServiceFormState
-
-        const docRef = await addDoc(collection(db, 'services'), {...dataForAdd, createdAt: Timestamp.now()});
+        const docRef = await addDoc(collection(db, 'services'), {...serviceData, createdAt: Timestamp.now()});
         console.log("Service added with ID:", docRef.id);
         toast({
           title: "Service Added",
@@ -173,9 +177,15 @@ export default function ManageServicesPage() {
       setCurrentService(initialServiceFormState);
     } catch (error) {
       console.error("Error saving service to Firestore: ", error);
+      let description = "Could not save service to Firestore. Check browser console for details.";
+      if ((error as Error).message.includes("PERMISSION_DENIED")) {
+        description = "Permission denied. Please check your Firestore security rules to allow writes to the 'services' collection.";
+      } else if ((error as Error).message.includes("Cloud Firestore API has not been used")) {
+        description = "Cloud Firestore API is not enabled for this project. Please enable it in Google Cloud Console.";
+      }
       toast({
         title: "Error saving service",
-        description: "Could not save service to Firestore. Check browser console for details.",
+        description: description,
         variant: "destructive",
       });
     }
@@ -330,16 +340,31 @@ export default function ManageServicesPage() {
       </Card>
       <Card className="mt-8">
         <CardHeader>
-            <CardTitle className="text-base">Developer Notes</CardTitle>
+            <CardTitle className="text-base">Developer Notes & Troubleshooting</CardTitle>
         </CardHeader>
         <CardContent className="space-y-1 text-xs text-muted-foreground">
-            <p>This page now interacts with Firestore to manage services.</p>
+            <p>This page interacts with Firestore to manage services.</p>
             <div>Make sure:
                 <ul className="list-disc list-inside pl-4">
                     <li>Your Firebase project is configured correctly in <code>src/lib/firebase.ts</code> (with your actual credentials).</li>
-                    <li>The Cloud Firestore API is enabled for your project in Google Cloud Console.</li>
+                    <li>The Cloud Firestore API is enabled for your project in Google Cloud Console. Visit the link from any "Cloud Firestore API has not been used" error in the console.</li>
                     <li>You have a "services" collection in Firestore.</li>
-                    <li>Firestore security rules are set up to allow reads/writes as needed (e.g., for authenticated admin users, or open for development).</li>
+                    <li>
+                        Firestore security rules are set up to allow reads/writes as needed. 
+                        <strong>If you see "PERMISSION_DENIED" errors, this is the most likely cause.</strong>
+                        For development, you can temporarily use:
+                        <pre className="mt-1 p-1.5 bg-muted rounded text-xs font-mono">
+{`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /services/{document=**} { // Allows access to 'services' collection & subcollections
+      allow read, write: if true;
+    }
+  }
+}`}
+                        </pre>
+                         <strong className="text-destructive">Warning: These rules are insecure and for development only. Secure your rules before production.</strong>
+                    </li>
                     <li>Each service document should include a 'createdAt' (Timestamp) field for default sorting. 'updatedAt' (Timestamp) is used for edits.</li>
                 </ul>
             </div>
