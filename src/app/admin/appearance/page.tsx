@@ -48,6 +48,11 @@ const initialThemeColors: ThemeColors = {
 // Helper to extract HSL value part, e.g., "40 50% 96%" from "hsl(40 50% 96%)" or just "40 50% 96%"
 const getHslValue = (cssVarValue: string): string => {
   const trimmedValue = cssVarValue.trim();
+  // Check if it's already a HEX value (for background after color picker use)
+  if (trimmedValue.startsWith('#')) return trimmedValue;
+  // Check if it's an rgb() value from getComputedStyle
+  if (trimmedValue.startsWith('rgb')) return trimmedValue; // Picker won't like this, but store it.
+
   const match = trimmedValue.match(/^hsl\((.*)\)$/);
   if (match && match[1]) {
     return match[1].trim();
@@ -104,15 +109,20 @@ export default function AppearancePage() {
 
   const applyThemeChanges = () => {
     Object.entries(themeColors).forEach(([key, value]) => {
-      // Convert kebab-case to CSS variable name
       const cssVarName = `--${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
-      if (value.trim() !== '') { // Only set if value is not empty
-        // For HSL values, they are typically stored directly in globals.css without hsl()
-        // So we add hsl() when setting them via JS, unless they already include it.
-        const finalValue = value.includes('hsl(') ? value : `hsl(${value})`;
+      if (value.trim() !== '') {
+        let finalValue = value;
+        // If the key is 'background' and the value is a HEX color, apply it directly.
+        // Otherwise, for HSL values, wrap with hsl() if not already wrapped.
+        if (key === 'background' && value.startsWith('#')) {
+          finalValue = value;
+        } else if (!value.includes('hsl(') && !value.startsWith('#') && !value.startsWith('rgb')) {
+          // This condition ensures we only wrap HSL parts, not HEX or existing hsl()/rgb()
+          finalValue = `hsl(${value})`;
+        }
+        // If value is already 'hsl(...)' or 'rgb(...)', it will be used as is.
         document.documentElement.style.setProperty(cssVarName, finalValue);
       } else {
-         // If value is empty, remove the inline style to revert to stylesheet
         document.documentElement.style.removeProperty(cssVarName);
       }
     });
@@ -123,12 +133,10 @@ export default function AppearancePage() {
   };
   
   const resetToDefaultStyles = () => {
-    // Remove all inline styles set by this component
     Object.keys(themeColors).forEach((key) => {
        const cssVarName = `--${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
        document.documentElement.style.removeProperty(cssVarName);
     });
-    // Re-fetch from computed (stylesheet) values
     fetchCurrentTheme();
     toast({
       title: "Theme Reset",
@@ -138,7 +146,7 @@ export default function AppearancePage() {
 
 
   const colorFields: Array<{ key: keyof ThemeColors; label: string; description: string }> = [
-    { key: 'background', label: 'Background', description: 'e.g., 0 0% 100% (for white)' },
+    { key: 'background', label: 'Background', description: 'HEX (e.g. #FFFFFF) or HSL (e.g., 0 0% 100%)' },
     { key: 'foreground', label: 'Foreground (Text)', description: 'e.g., 222.2 47.4% 11.2% (for dark text)' },
     { key: 'card', label: 'Card Background', description: 'e.g., 0 0% 100%' },
     { key: 'cardForeground', label: 'Card Foreground (Text)', description: 'e.g., 222.2 47.4% 11.2%' },
@@ -166,7 +174,7 @@ export default function AppearancePage() {
         <CardHeader>
           <CardTitle>Light Theme Colors</CardTitle>
           <CardDescription>
-            Enter HSL values (e.g., "H S% L%"). For example, for white background, use "0 0% 100%".
+            For 'Background', you can use the color picker (HEX). For other fields, enter HSL values (e.g., "H S% L%").
             These changes apply a live preview. To make them permanent, update <code>src/app/globals.css</code>.
           </CardDescription>
         </CardHeader>
@@ -175,14 +183,25 @@ export default function AppearancePage() {
             {colorFields.map(({ key, label, description }) => (
               <div key={key} className="space-y-2">
                 <Label htmlFor={key}>{label}</Label>
-                <Input
-                  id={key}
-                  name={key}
-                  value={themeColors[key]}
-                  onChange={handleInputChange}
-                  placeholder={description}
-                  className="font-mono text-sm"
-                />
+                {key === 'background' ? (
+                  <Input
+                    type="color"
+                    id={key}
+                    name={key}
+                    value={themeColors[key]?.startsWith('#') ? themeColors[key] : '#000000'} // Default to black if not a valid HEX
+                    onChange={handleInputChange}
+                    className="h-10 w-full p-1" // Adjusted padding for color input
+                  />
+                ) : (
+                  <Input
+                    id={key}
+                    name={key}
+                    value={themeColors[key]}
+                    onChange={handleInputChange}
+                    placeholder={description.replace('HEX (e.g. #FFFFFF) or ', '')} // Remove HEX part for non-background
+                    className="font-mono text-sm"
+                  />
+                )}
                 <p className="text-xs text-muted-foreground">{description}</p>
               </div>
             ))}
@@ -207,7 +226,10 @@ export default function AppearancePage() {
                 <strong>Live Preview Only:</strong> Changes made here modify the current page view for demonstration. They are not saved to your project files.
             </p>
             <p>
-                <strong>Making Changes Permanent:</strong> To permanently apply these colors, you must manually copy the HSL values into the corresponding CSS variables in <code>src/app/globals.css</code>.
+                <strong>Making Changes Permanent:</strong> To permanently apply these colors, you must manually copy the HSL (or HEX for background) values into the corresponding CSS variables in <code>src/app/globals.css</code>.
+            </p>
+            <p>
+                <strong>Background Color Input:</strong> The 'Background' field now uses a color picker which outputs HEX values. Other fields expect HSL strings.
             </p>
             <p>
                 <strong>Dark Theme:</strong> This tool currently only previews changes for the light theme. Dark theme customization would require similar inputs for variables under the <code>.dark</code> selector in <code>globals.css</code>.
@@ -220,3 +242,4 @@ export default function AppearancePage() {
     </div>
   );
 }
+

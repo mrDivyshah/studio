@@ -9,13 +9,13 @@ import { getAuth } from "firebase/auth"; // If you plan to use Firebase Auth
 // Your web app's Firebase configuration
 // IMPORTANT: Replace with your actual Firebase project configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID" // Optional: if you use Analytics
+  apiKey: "AIzaSyDIpCa2igjeY51Btc8HGTf6Gmn64X0LWDk",
+  authDomain: "suparshwamarketing.firebaseapp.com",
+  projectId: "suparshwamarketing",
+  storageBucket: "suparshwamarketing.firebasestorage.app",
+  messagingSenderId: "300745944934",
+  appId: "1:300745944934:web:0d38954f065fe5740e22a7",
+  measurementId: "G-T9H5WWK3EG"
 };
 
 // Initialize Firebase
