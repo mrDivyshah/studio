@@ -29,14 +29,13 @@ import { PlusCircle, Edit, Trash2, UploadCloud } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { db, storage } from '@/lib/firebase'; // Import storage
+import { db } from '@/lib/firebase'; 
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, Timestamp, query, orderBy } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage"; // Storage functions
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface ServiceFormData extends Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'imageUrl'> {
   imageFile?: File | null;
-  imageUrl?: string; // Keep imageUrl for existing images or when no new file is selected
+  imageUrl?: string; 
 }
 
 const initialServiceFormState: ServiceFormData = {
@@ -44,7 +43,7 @@ const initialServiceFormState: ServiceFormData = {
   description: '',
   price: 0,
   imageFile: null,
-  imageUrl: 'https://placehold.co/400x300.png', // Default placeholder
+  imageUrl: 'https://placehold.co/400x300.png', 
   imageHint: 'service placeholder',
   stockStatus: 'in-stock',
   category: 'Uncategorized',
@@ -57,7 +56,7 @@ export default function ManageServicesPage() {
   const [currentService, setCurrentService] = useState<Partial<Product & { imageFile?: File | null }>>(initialServiceFormState);
   const [isEditing, setIsEditing] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(initialServiceFormState.imageUrl || null);
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null); // Can be used for local upload progress if desired, or removed
   const { toast } = useToast();
 
   const fetchServices = async () => {
@@ -73,7 +72,7 @@ export default function ManageServicesPage() {
     } catch (error) {
       console.error("Error fetching services: ", error);
       let description = "Could not load services. Check browser console for details.";
-      if (error instanceof Error && error.message.includes("PERMISSION_DENIED")) {
+      if (error instanceof Error && (error as any).code === "permission-denied") {
         description = "Permission denied. Please check your Firestore security rules to allow reads from the 'services' collection. Also ensure the Firestore API is enabled for your project.";
       } else if (error instanceof Error && (error.message.includes("firestore.googleapis.com") || error.message.includes("Cloud Firestore API") || error.message.includes("used in project") )) {
          description = "Cloud Firestore API might not be enabled or configured correctly for this project. Please enable it in Google Cloud Console and check your Firebase config.";
@@ -102,7 +101,7 @@ export default function ManageServicesPage() {
 
   const handleEditService = (service: Product) => {
     setIsEditing(true);
-    setCurrentService({...service, imageFile: null}); // Reset imageFile on edit
+    setCurrentService({...service, imageFile: null}); 
     setImagePreview(service.imageUrl);
     setUploadProgress(null);
     setIsDialogOpen(true);
@@ -117,19 +116,10 @@ export default function ManageServicesPage() {
     try {
       await deleteDoc(doc(db, 'services', serviceId));
       
-      if (imageUrl && !imageUrl.startsWith('https://placehold.co') && imageUrl.includes('firebasestorage.googleapis.com')) {
-        try {
-          const imageRef = ref(storage, imageUrl);
-          await deleteObject(imageRef);
-          console.log("Image deleted from storage:", imageUrl);
-        } catch (storageError) {
-          console.error("Error deleting image from storage:", storageError);
-          toast({
-            title: "Image Deletion Note",
-            description: "Service deleted, but its image might not have been removed from storage. Check console.",
-            variant: "default",
-          });
-        }
+      // Note: Local file deletion (for imageUrl like /uploads/...) is not implemented here.
+      // If imageUrl pointed to a remote URL that needs cleanup, that would go here.
+      if (imageUrl && imageUrl.startsWith('/uploads/')) {
+         console.log("Image was a local file:", imageUrl, "Automatic deletion not implemented.");
       }
 
       setServices(prevServices => prevServices.filter(s => s.id !== serviceId));
@@ -141,7 +131,7 @@ export default function ManageServicesPage() {
     } catch (error) {
       console.error("Error deleting service from Firestore: ", error);
       let description = "Could not delete service. Check browser console for details.";
-      if (error instanceof Error && error.message.includes("PERMISSION_DENIED")) {
+      if (error instanceof Error && (error as any).code === "permission-denied") {
         description = "Permission denied. Please check your Firestore security rules to allow deletions from the 'services' collection.";
       }
       toast({
@@ -165,8 +155,10 @@ export default function ManageServicesPage() {
       setImagePreview(URL.createObjectURL(file));
     } else {
       console.log("handleImageFileChange: No file selected or selection cancelled.");
-      setCurrentService(prev => ({ ...prev, imageFile: null }));
-      setImagePreview(isEditing && currentService.imageUrl ? currentService.imageUrl : initialServiceFormState.imageUrl!);
+      // If editing and an image already exists, keep it, otherwise, if no file selected and no existing image, revert to placeholder
+      const existingImageUrl = isEditing && currentService.imageUrl ? currentService.imageUrl : initialServiceFormState.imageUrl!;
+      setCurrentService(prev => ({ ...prev, imageFile: null, imageUrl: existingImageUrl }));
+      setImagePreview(existingImageUrl);
     }
   };
   
@@ -201,70 +193,58 @@ export default function ManageServicesPage() {
       return;
     }
 
-
-    let finalImageUrl = isEditing ? currentService.imageUrl : initialServiceFormState.imageUrl;
+    let finalImageUrl = currentService.imageUrl || initialServiceFormState.imageUrl; 
     console.log("handleSubmitService: Initial finalImageUrl:", finalImageUrl);
 
-    console.log("handleSubmitService: Proceeding to image upload if file exists.");
+    console.log("handleSubmitService: Proceeding to local API image upload if file exists.");
     if (currentService.imageFile) {
       const file = currentService.imageFile;
       console.log("handleSubmitService: Image file found:", file.name, file.size, file.type);
-      const storageRef = ref(storage, `services_images/${Date.now()}_${file.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
+      
+      const formData = new FormData();
+      formData.append('file', file);
 
-      console.log("handleSubmitService: Starting image upload via uploadBytesResumable to:", storageRef.fullPath);
+      console.log("handleSubmitService: Starting local image upload via fetch to /api/upload");
+      setUploadProgress(50); // Indicate progress start
+
       try {
-        await new Promise<void>((resolve, reject) => {
-          uploadTask.on('state_changed',
-            (snapshot) => {
-              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              setUploadProgress(progress);
-              console.log('handleSubmitService: Upload is ' + progress + '% done');
-            },
-            (error) => {
-              console.error("handleSubmitService: Image upload error in uploadTask.on:", error);
-              let uploadErrorDesc = "Image upload failed. Check browser console for details.";
-              if (error.message.includes("storage/unauthorized") || error.message.includes("User does not have permission")) {
-                uploadErrorDesc = "Image upload failed: Permission denied. Check Firebase Storage security rules.";
-              } else if (error.message.includes("storage/object-not-found")) {
-                uploadErrorDesc = "Image upload failed: Object not found. This can happen if the path is incorrect or the bucket is misconfigured.";
-              } else if (error.message.toLowerCase().includes("cors")) {
-                uploadErrorDesc = "Image upload failed: CORS policy issue. Please check your Firebase Storage (Google Cloud Storage bucket) CORS configuration.";
-              }
-              toast({ title: "Image Upload Failed", description: uploadErrorDesc, variant: "destructive" });
-              reject(error);
-            },
-            async () => {
-              try {
-                finalImageUrl = await getDownloadURL(uploadTask.snapshot.ref);
-                console.log('handleSubmitService: File available at', finalImageUrl);
-                resolve();
-              } catch (downloadUrlError) {
-                console.error("handleSubmitService: Error getting download URL:", downloadUrlError);
-                toast({ title: "Image Upload Failed", description: "Could not get download URL after upload. Check console.", variant: "destructive" });
-                reject(downloadUrlError);
-              }
-            }
-          );
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
         });
-        console.log("handleSubmitService: Image upload promise resolved successfully.");
-      } catch (error) {
-         console.error("handleSubmitService: Error during image upload promise execution or getDownloadURL:", error);
-        setUploadProgress(null);
-        // Toast is typically handled by the inner error handler of uploadTask.on, but this catch is a fallback.
-        // If not already toasted, ensure user knows.
-        if (!(error && (error as any).message && (error as any).message.toLowerCase().includes("cors"))) { // Avoid double toast for CORS
-            // toast({ title: "Image Upload Error", description: "An unexpected error occurred during image upload. Check console.", variant: "destructive" });
+        
+        setUploadProgress(100); // Indicate progress end
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({error: "Unknown error during upload."}));
+          console.error("handleSubmitService: Local image upload API error. Status:", response.status, "Response:", errorData);
+          toast({ title: "Image Upload Failed", description: `Server error: ${errorData.error || response.statusText}`, variant: "destructive" });
+          setUploadProgress(null);
+          return;
         }
+
+        const result = await response.json();
+        if (result.success && result.filePath) {
+          finalImageUrl = result.filePath;
+          console.log('handleSubmitService: File uploaded locally, path:', finalImageUrl);
+        } else {
+          console.error("handleSubmitService: Local image upload API returned success=false or no filePath. Result:", result);
+          toast({ title: "Image Upload Failed", description: result.error || "Could not get file path after upload.", variant: "destructive" });
+          setUploadProgress(null);
+          return;
+        }
+      } catch (error) {
+         console.error("handleSubmitService: Error during local image upload fetch call:", error);
+         toast({ title: "Image Upload Error", description: "An unexpected error occurred during image upload. Check console.", variant: "destructive" });
+         setUploadProgress(null);
         return; 
       }
     } else {
       console.log("handleSubmitService: No new image file to upload.");
-      if (!finalImageUrl && !isEditing) {
+      // If editing and no new file, finalImageUrl should already be the existing one or placeholder.
+      // If adding new and no file, it will use the placeholder from initial state.
+      if (!finalImageUrl) {
          finalImageUrl = initialServiceFormState.imageUrl;
-         console.log("handleSubmitService: Using default placeholder for new service as no image was provided.");
-      } else if (isEditing && currentService.imageUrl) {
-          console.log("handleSubmitService: Retaining existing image URL for edited service:", currentService.imageUrl);
       }
     }
 
@@ -308,7 +288,7 @@ export default function ManageServicesPage() {
       console.error("handleSubmitService: Error saving service to Firestore: ", error);
       let description = "Could not save service to Firestore. Check browser console for details.";
       if (error instanceof Error) {
-        if (error.message.includes("PERMISSION_DENIED")) {
+        if ((error as any).code === "permission-denied") {
           description = "Firestore Error: Permission Denied. Please check your Firestore security rules to allow writes to the 'services' collection.";
         } else if (error.message.includes("Cloud Firestore API has not been used")) {
           description = "Firestore Error: Cloud Firestore API is not enabled for this project. Please enable it in Google Cloud Console.";
@@ -389,7 +369,15 @@ export default function ManageServicesPage() {
              {imagePreview && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <div className="col-start-2 col-span-3">
-                  <Image src={imagePreview} alt={currentService.name || "Service image preview"} width={100} height={75} className="rounded-md object-cover border" data-ai-hint={currentService.imageHint || "placeholder image"}/>
+                  <Image 
+                    src={imagePreview.startsWith('blob:') || imagePreview.startsWith('/') ? imagePreview : `https://placehold.co/100x75.png`} 
+                    alt={currentService.name || "Service image preview"} 
+                    width={100} 
+                    height={75} 
+                    className="rounded-md object-cover border" 
+                    data-ai-hint={currentService.imageHint || "placeholder image"}
+                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100x75.png'; }}
+                  />
                 </div>
               </div>
             )}
@@ -498,96 +486,66 @@ export default function ManageServicesPage() {
       </Card>
       <Card className="mt-8">
         <CardHeader>
-            <CardTitle className="text-base">Developer Notes & Troubleshooting Firebase</CardTitle>
+            <CardTitle className="text-base">Developer Notes & Troubleshooting</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-xs text-muted-foreground">
-            <p>This page interacts with Firestore for service data and Firebase Storage for image uploads.</p>
+            <p>This page interacts with Firestore for service data and a Next.js API route for image uploads to the local server (`public/uploads/`).</p>
             
-            <p className="font-semibold">If you encounter "PERMISSION_DENIED" errors or data isn't saving/loading/uploading:</p>
+            <p className="font-semibold">If Firestore data isn't saving/loading:</p>
             <div className="pl-4 space-y-2">
                 <div>
-                    <p><strong>1. Enable APIs in Google Cloud Console:</strong></p>
+                    <p><strong>1. Enable Firestore API in Google Cloud Console:</strong></p>
                     <ul className="list-disc list-inside pl-4">
-                        <li>Ensure <strong>Cloud Firestore API</strong> is enabled for project <code>suparshwamarketing</code>: <code className="text-xs">https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=suparshwamarketing</code>.</li>
-                        <li>Ensure <strong>Cloud Storage API</strong> (often listed as "Cloud Storage" or `storage.googleapis.com`) is enabled for project <code>suparshwamarketing</code>. This is separate from "Firebase Storage API" which might also exist.</li>
+                        <li>Ensure <strong>Cloud Firestore API</strong> is enabled for project <code>suparshwamarketing</code>.</li>
                     </ul>
                 </div>
                  <div>
                     <p className="mt-1"><strong>2. Check Firebase Configuration:</strong></p>
                     <ul className="list-disc list-inside pl-4">
-                        <li>Verify that <code>src/lib/firebase.ts</code> contains your correct and complete Firebase project configuration, especially `projectId` and `storageBucket` (e.g., `suparshwamarketing.appspot.com`).</li>
+                        <li>Verify that <code>src/lib/firebase.ts</code> contains your correct Firebase project configuration.</li>
                     </ul>
                  </div>
                 <div>
                     <p className="mt-1"><strong>3. Firestore Security Rules (Firestore Database &gt; Rules tab):</strong></p>
-                    <p className="pl-2">These rules control who can read/write to your database. For development with authentication:</p>
+                    <p className="pl-2">Ensure rules allow authenticated admin users to read/write to the 'services' collection:</p>
                     <pre className="my-1 p-1.5 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
     {`rules_version = '2';
     service cloud.firestore {
       match /databases/{database}/documents {
-        // For the 'services' collection
         match /services/{serviceId} {
-          // Allows anyone to read the services (for your public products page)
-          allow read: if true;
-
-          // Allows authenticated users to create, update, delete services.
-          // Ensure you are logged into the admin panel.
-          allow write: if request.auth != null;
+          allow read: if true; // Public can read
+          allow write: if request.auth != null; // Authenticated admin can write
         }
       }
     }`}
                     </pre>
-                     <p className="pl-2">If still testing without full auth setup on admin: <code className="text-xs">allow write: if true;</code> (Less secure, for initial dev only).</p>
                 </div>
-                <div>
-                    <p className="mt-1"><strong>4. Firebase Storage Security Rules (Storage &gt; Rules tab):</strong></p>
-                    <p className="pl-2">These rules control who can upload/download files. For development, for the `services_images` folder (ensure your authenticated admin user can write):</p>
-                    <pre className="my-1 p-1.5 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
-    {`rules_version = '2';
-    service firebase.storage {
-      match /b/{bucket}/o {
-        // Allow public read access to images in the 'services_images' folder for display on your site
-        match /services_images/{allPaths=**} {
-          allow read: if true;
-
-          // Allow authenticated users (your admin) to upload images to this folder.
-          allow write: if request.auth != null;
-        }
-      }
-    }`}
-                    </pre>
-                    <p className="pl-2">If still testing without full auth setup on admin: <code className="text-xs">allow write: if true;</code> under `services_images` (Less secure, for initial dev only).</p>
-                </div>
-                <div>
-                    <p className="mt-1 font-semibold text-destructive"><strong>5. CORS Configuration for Firebase Storage (Google Cloud Storage Bucket):</strong></p>
-                    <p className="pl-2">If uploads fail with CORS errors (Cross-Origin Resource Sharing), your Storage bucket needs to allow requests from your app's domain. This is configured on the Google Cloud Storage bucket, not directly in Firebase Storage rules.</p>
-                    <p className="pl-2">Use the `gsutil` command-line tool (part of Google Cloud SDK):</p>
-                    <ol className="list-decimal list-inside pl-6 space-y-1">
-                        <li>Create a JSON file (e.g., `cors-config.json`):
-                          <pre className="my-1 p-1.5 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
-    {`[
-      {
-        "origin": ["https://YOUR_CLOUD_WORKSTATIONS_DEV_URL", "http://localhost:9002"],
-        "method": ["GET", "HEAD", "PUT", "POST", "DELETE"],
-        "responseHeader": ["Content-Type", "Access-Control-Allow-Origin", "x-goog-resumable"],
-        "maxAgeSeconds": 3600
-      }
-    ]`}
-                          </pre>
-                          Replace `"https://YOUR_CLOUD_WORKSTATIONS_DEV_URL"` with your actual preview domain (e.g., from your browser's address bar when viewing the app). Include `http://localhost:9002` if you also test locally. The `x-goog-resumable` header can sometimes be important for resumable uploads.
-                        </li>
-                        <li>Apply the config: `gsutil cors set cors-config.json gs://YOUR_BUCKET_NAME` (e.g., `gs://suparshwamarketing.appspot.com`)</li>
-                        <li>Verify: `gsutil cors get gs://YOUR_BUCKET_NAME`</li>
-                    </ol>
-                </div>
-                <strong className="text-destructive">Warning: Using `if true;` for rules is insecure and strictly for initial development. Secure your rules with proper authentication and authorization checks (e.g., `if request.auth != null;`) before deploying to production.</strong>
             </div>
-            <p className="mt-2">If saving/uploading still fails, check your browser's developer console (usually F12) for detailed error messages from Firebase. These often provide specific clues about permission issues, API configurations, or CORS problems. Look for messages logged by "handleSubmitService:" to trace the execution flow.</p>
+            <p className="mt-2 font-semibold">If image uploads are failing:</p>
+             <div className="pl-4 space-y-2">
+                <div>
+                    <p><strong>1. Check API Route:</strong></p>
+                    <ul className="list-disc list-inside pl-4">
+                        <li>The API route <code>/api/upload</code> handles file saving. Check server logs for errors if uploads fail.</li>
+                        <li>The <code>public/uploads</code> directory must be writable by the Next.js server process.</li>
+                    </ul>
+                </div>
+                <div>
+                    <p className="mt-1"><strong>2. File System Permissions (Server-Side):</strong></p>
+                    <ul className="list-disc list-inside pl-4">
+                         <li>Ensure the Next.js server process has write permissions to the `public/uploads` directory on the server where it's running.</li>
+                    </ul>
+                </div>
+                 <div>
+                    <p className="mt-1"><strong>3. Deployment Considerations:</strong></p>
+                    <ul className="list-disc list-inside pl-4">
+                         <li>Storing uploads locally in `public/uploads` may not be suitable for all deployment platforms (e.g., Vercel, serverless environments) as the file system might be ephemeral. For persistent storage in such cases, a dedicated service like Firebase Storage, AWS S3, or Cloudinary is recommended.</li>
+                    </ul>
+                 </div>
+            </div>
+            <p className="mt-2">If saving/uploading still fails, check your browser's developer console (usually F12) for detailed error messages from Firebase or the API route. These often provide specific clues. Look for messages logged by "handleSubmitService:" to trace the execution flow.</p>
         </CardContent>
       </Card>
     </div>
   );
 }
-
-
-    

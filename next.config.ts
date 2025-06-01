@@ -17,12 +17,9 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      {
-        protocol: 'https',
-        hostname: 'firebasestorage.googleapis.com',
-        port: '',
-        pathname: '/**',
-      }
+      // Removed firebasestorage.googleapis.com as images are now local
+      // If you have other images from Firebase Storage, you might need to add it back
+      // or migrate them to be served locally or through another provider.
     ],
   },
 };
