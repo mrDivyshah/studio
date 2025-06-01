@@ -27,7 +27,7 @@ export default function MapEmbed() {
         <Map
           defaultCenter={BUSINESS_LOCATION_COORDS}
           defaultZoom={15}
-          mapId="electroHubBusinessMap" 
+          mapId="suparshwaMarketingMap" // Updated mapId
           gestureHandling={'greedy'}
           disableDefaultUI={false}
           fullscreenControl={false}

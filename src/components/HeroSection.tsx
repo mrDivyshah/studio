@@ -5,16 +5,16 @@ import { ChevronRight, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 
 export default function HeroSection() {
-  const whatsappMessage = encodeURIComponent(`Hello ${BUSINESS_NAME}, I'd like to inquire about your products.`);
+  const whatsappMessage = encodeURIComponent(`Hello ${BUSINESS_NAME}, I'd like to inquire about your services.`);
   const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${whatsappMessage}`;
 
   return (
     <section className="relative bg-gradient-to-br from-primary via-primary/80 to-accent text-primary-foreground py-20 md:py-32 rounded-lg shadow-xl overflow-hidden">
       <div className="absolute inset-0">
         <Image
-          src="https://placehold.co/1600x900.png"
-          alt="Electrical components background"
-          data-ai-hint="electrical components abstract"
+          src="https://placehold.co/1600x900.png" // Generic placeholder
+          alt="Abstract marketing background"
+          data-ai-hint="marketing abstract business" // Updated hint
           layout="fill"
           objectFit="cover"
           quality={80}
@@ -31,8 +31,8 @@ export default function HeroSection() {
         </p>
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
           <Button asChild size="lg" className="bg-background text-foreground hover:bg-background/90 shadow-md transition-transform hover:scale-105">
-            <Link href="/products">
-              Explore Products <ChevronRight className="ml-2 h-5 w-5" />
+            <Link href="/products"> {/* products path still leads to services page as defined in constants NAV_LINKS */}
+              Explore Services <ChevronRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 shadow-md transition-transform hover:scale-105">

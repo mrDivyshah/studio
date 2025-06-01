@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import type { Product } from '@/types';
+import type { Product } from '@/types'; // Product can represent a Service
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,24 +7,25 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 interface ProductCardProps {
-  product: Product;
+  product: Product; // 'product' is used generically for a service item
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
   const getStockBadgeVariant = (status: Product['stockStatus']) => {
     switch (status) {
-      case 'in-stock':
-        return 'default'; // Greenish or positive color (depends on theme)
-      case 'low-stock':
-        return 'secondary'; // Yellowish or warning color
-      case 'out-of-stock':
+      case 'in-stock': // For services, this can mean 'Available'
+        return 'default'; 
+      case 'low-stock': // Could mean 'Limited Slots' or similar for services
+        return 'secondary'; 
+      case 'out-of-stock': // Could mean 'Currently Booked' or 'Unavailable'
         return 'destructive';
       default:
         return 'outline';
     }
   };
   
-  const stockText = product.stockStatus.replace('-', ' ');
+  // Adjust text based on service context if needed, e.g., "Available" instead of "in stock"
+  const stockText = product.stockStatus === 'in-stock' ? 'Available' : product.stockStatus.replace('-', ' ');
 
   return (
     <Card id={product.id} className="flex flex-col h-full overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
@@ -58,7 +59,6 @@ export default function ProductCard({ product }: ProductCardProps) {
       </CardContent>
       <CardFooter>
         <Button asChild variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground">
-          {/* This link is illustrative; a real e-commerce site would link to a product detail page */}
           <Link href={`/contact?product=${encodeURIComponent(product.name)}`}>
             Inquire Now
           </Link>

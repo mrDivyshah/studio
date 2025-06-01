@@ -3,7 +3,7 @@ import HeroSection from '@/components/HeroSection';
 import PartnerLogos from '@/components/PartnerLogos';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Zap, Lightbulb, ShieldCheck } from 'lucide-react';
+import { BarChartBig, Lightbulb, ShieldCheck, TrendingUp } from 'lucide-react'; // Replaced Zap with BarChartBig/TrendingUp
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PRODUCTS_DATA, OWNER_WHATSAPP_NUMBER, BUSINESS_NAME } from '@/lib/constants';
@@ -21,18 +21,18 @@ export default function HomePage() {
       <HeroSection />
 
       <section className="container mx-auto px-4">
-        <h2 className="font-headline text-3xl font-bold text-center mb-12">Why Choose Electro Hub?</h2>
+        <h2 className="font-headline text-3xl font-bold text-center mb-12">Why Choose {BUSINESS_NAME}?</h2>
         <div className="grid md:grid-cols-3 gap-8 text-center">
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground mb-4">
-                <Zap className="w-8 h-8" />
+                <TrendingUp className="w-8 h-8" />
               </div>
-              <CardTitle className="font-headline text-xl">Wide Product Range</CardTitle>
+              <CardTitle className="font-headline text-xl">Results-Driven Strategies</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                From basic wiring to advanced control systems, find everything you need under one roof.
+                We focus on delivering measurable results that help your business grow.
               </p>
             </CardContent>
           </Card>
@@ -41,11 +41,11 @@ export default function HomePage() {
                <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground mb-4">
                 <Lightbulb className="w-8 h-8" />
               </div>
-              <CardTitle className="font-headline text-xl">Quality Assured</CardTitle>
+              <CardTitle className="font-headline text-xl">Innovative Solutions</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                We source products from trusted brands, ensuring durability and performance.
+                Creative and cutting-edge marketing approaches tailored to your needs.
               </p>
             </CardContent>
           </Card>
@@ -58,7 +58,7 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Our knowledgeable team is ready to assist you with product selection and technical advice.
+                Our experienced team is dedicated to your success and provides ongoing support.
               </p>
             </CardContent>
           </Card>
@@ -68,7 +68,7 @@ export default function HomePage() {
       <PartnerLogos />
       
       <section className="container mx-auto px-4">
-        <h2 className="font-headline text-3xl font-bold text-center mb-12">Featured Products</h2>
+        <h2 className="font-headline text-3xl font-bold text-center mb-12">Our Core Services</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {PRODUCTS_DATA.slice(0, 3).map((product) => (
             <Card key={product.id} className="overflow-hidden hover:shadow-xl transition-shadow">
@@ -96,16 +96,16 @@ export default function HomePage() {
         </div>
         <div className="text-center mt-12">
           <Button asChild size="lg">
-            <Link href="/products">See All Products</Link>
+            <Link href="/products">See All Services</Link>
           </Button>
         </div>
       </section>
 
       <section className="bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 py-16 text-center">
-          <h2 className="font-headline text-3xl font-bold mb-6">Ready to Power Up Your Projects?</h2>
+          <h2 className="font-headline text-3xl font-bold mb-6">Ready to Elevate Your Marketing?</h2>
           <p className="text-lg mb-8 max-w-2xl mx-auto">
-            Contact us today for a quote or to discuss your electrical supply needs.
+            Contact us today for a consultation or to discuss your marketing needs.
           </p>
           <Button asChild variant="secondary" size="lg" className="bg-background text-foreground hover:bg-background/90 shadow-md transition-transform hover:scale-105">
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">

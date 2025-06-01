@@ -16,13 +16,13 @@ const contactFormSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
   phone: z.string().optional(),
   message: z.string().min(10, { message: "Message must be at least 10 characters." }),
-  productInquiry: z.string().optional(), // Hidden field for product context
+  productInquiry: z.string().optional(), // Hidden field for service/product context
 });
 
 type ContactFormValues = z.infer<typeof contactFormSchema>;
 
 interface ContactFormProps {
-  productName?: string;
+  productName?: string; // Can be service name
 }
 
 export default function ContactForm({ productName }: ContactFormProps) {
@@ -33,7 +33,7 @@ export default function ContactForm({ productName }: ContactFormProps) {
       name: "",
       email: "",
       phone: "",
-      message: productName ? `I'm interested in the product: ${productName}. ` : "",
+      message: productName ? `I'm interested in the service: ${productName}. ` : "",
       productInquiry: productName,
     },
   });
@@ -50,7 +50,6 @@ export default function ContactForm({ productName }: ContactFormProps) {
 
     const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${encodeURIComponent(prefilledMessage)}`;
     
-    // Try to open WhatsApp
     const newWindow = window.open(whatsappUrl, '_blank');
 
     if (newWindow) {

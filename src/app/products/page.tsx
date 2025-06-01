@@ -1,27 +1,24 @@
 import type { Metadata } from 'next';
 import ProductCard from '@/components/ProductCard';
-import { PRODUCTS_DATA } from '@/lib/constants';
+import { PRODUCTS_DATA, BUSINESS_NAME } from '@/lib/constants';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search } from 'lucide-react';
-// This page would ideally have client-side filtering/sorting logic
-// For now, it will be a static display.
 
 export const metadata: Metadata = {
-  title: 'Our Products',
-  description: 'Browse our wide range of quality electrical wholesale products.',
+  title: 'Our Services', // Changed from Products to Services
+  description: `Browse our wide range of marketing services at ${BUSINESS_NAME}.`,
 };
 
-// Dummy component for search and filter controls
-function ProductFilters() {
+function ServiceFilters() { // Renamed from ProductFilters
   return (
     <div className="mb-8 p-6 bg-card rounded-lg shadow">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
         <div className="space-y-1">
-          <label htmlFor="search" className="text-sm font-medium">Search Products</label>
+          <label htmlFor="search" className="text-sm font-medium">Search Services</label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input id="search" placeholder="e.g., Cable, LED Light" className="pl-10" />
+            <Input id="search" placeholder="e.g., SEO, Branding" className="pl-10" />
           </div>
         </div>
         <div className="space-y-1">
@@ -32,10 +29,10 @@ function ProductFilters() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              <SelectItem value="breakers">Circuit Breakers</SelectItem>
-              <SelectItem value="lighting">Lighting</SelectItem>
-              <SelectItem value="cables">Cables & Wires</SelectItem>
-              <SelectItem value="tools">Tools & Instruments</SelectItem>
+              <SelectItem value="digital">Digital Marketing</SelectItem>
+              <SelectItem value="branding">Branding</SelectItem>
+              <SelectItem value="content">Content Creation</SelectItem>
+              <SelectItem value="social">Social Media</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -59,28 +56,28 @@ function ProductFilters() {
 }
 
 
-export default function ProductsPage() {
+export default function ServicesPage() { // Renamed from ProductsPage
   return (
     <div className="space-y-12">
       <section className="text-center pt-8">
-        <h1 className="font-headline text-4xl font-bold mb-4">Our Products</h1>
+        <h1 className="font-headline text-4xl font-bold mb-4">Our Services</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Explore a comprehensive selection of high-quality electrical supplies for all your project needs.
+          Explore a comprehensive selection of high-quality marketing services for all your business needs.
         </p>
       </section>
 
-      <ProductFilters />
+      <ServiceFilters />
 
       <section>
         {PRODUCTS_DATA.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {PRODUCTS_DATA.map((product) => (
+            {PRODUCTS_DATA.map((product) => ( // product can represent a service here
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-xl text-muted-foreground">No products available at the moment. Please check back later.</p>
+            <p className="text-xl text-muted-foreground">No services available at the moment. Please check back later.</p>
           </div>
         )}
       </section>

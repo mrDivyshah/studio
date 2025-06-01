@@ -1,25 +1,26 @@
 import type { Metadata } from 'next';
 import ContactForm from '@/components/ContactForm';
 import MapEmbed from '@/components/MapEmbed';
-import { BUSINESS_HOURS, BUSINESS_ADDRESS_LINE1, BUSINESS_ADDRESS_LINE2, BUSINESS_PHONE, BUSINESS_EMAIL } from '@/lib/constants';
+import { BUSINESS_HOURS, BUSINESS_ADDRESS_LINE1, BUSINESS_ADDRESS_LINE2, BUSINESS_PHONE, BUSINESS_EMAIL, BUSINESS_NAME } from '@/lib/constants';
 import { Clock, MapPin, Phone, Mail } from 'lucide-react';
 import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Contact Us',
-  description: 'Get in touch with Electro Hub. Find our location, business hours, and send us a message.',
+  description: `Get in touch with ${BUSINESS_NAME}. Find our location, business hours, and send us a message.`,
 };
 
-// This is a server component, ContactForm and MapEmbed are client components.
 export default function ContactPage({ searchParams }: { searchParams?: { product?: string }}) {
-  const productName = searchParams?.product;
+  const productName = searchParams?.product; // Changed from 'product' to 'service' for marketing context
+  const inquirySubject = productName || "our services";
+
 
   return (
     <div className="py-8">
       <section className="text-center mb-12">
-        <h1 className="font-headline text-4xl font-bold mb-4">Contact Electro Hub</h1>
+        <h1 className="font-headline text-4xl font-bold mb-4">Contact {BUSINESS_NAME}</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          We're here to help with all your electrical supply needs. Reach out to us through the form below, or visit us at our location.
+          We're here to help with all your marketing needs. Reach out to us through the form below, or visit us at our location.
         </p>
       </section>
 

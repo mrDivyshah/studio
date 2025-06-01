@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BUSINESS_NAME } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'Privacy Policy for Electro Hub.',
+  description: `Privacy Policy for ${BUSINESS_NAME}.`,
 };
 
 export default function PrivacyPolicyPage() {
@@ -17,7 +18,7 @@ export default function PrivacyPolicyPage() {
           <p><strong>Last Updated: {new Date().toLocaleDateString()}</strong></p>
           
           <h2 className="font-semibold text-xl text-foreground pt-4">1. Introduction</h2>
-          <p>Welcome to Electro Hub. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website.</p>
+          <p>Welcome to {BUSINESS_NAME}. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website.</p>
 
           <h2 className="font-semibold text-xl text-foreground pt-4">2. Information We Collect</h2>
           <p>We may collect personal information that you voluntarily provide to us when you fill out a contact form, such as your name, email address, phone number, and message content.</p>
@@ -28,7 +29,7 @@ export default function PrivacyPolicyPage() {
           <ul className="list-disc list-inside ml-4">
             <li>Respond to your inquiries and provide customer support.</li>
             <li>Improve our website and services.</li>
-            <li>Communicate with you about products, services, and promotions, if you opt-in.</li>
+            <li>Communicate with you about services, and promotions, if you opt-in.</li>
             <li>Comply with legal obligations.</li>
           </ul>
 

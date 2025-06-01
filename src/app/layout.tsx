@@ -14,18 +14,18 @@ export const metadata: Metadata = {
     template: `%s | ${BUSINESS_NAME}`,
   },
   description: BUSINESS_SLOGAN,
-  keywords: ['electric wholesaler', 'electrical supplies', 'electro hub', 'wiring', 'lighting', 'circuit breakers'],
-  authors: [{ name: 'Electro Hub Team' }],
+  keywords: ['marketing agency', 'digital marketing', 'suparshwa marketing', 'branding', 'seo', 'social media'],
+  authors: [{ name: `${BUSINESS_NAME} Team` }],
   openGraph: {
     title: BUSINESS_NAME,
     description: BUSINESS_SLOGAN,
     type: 'website',
     locale: 'en_US',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com', // Replace with actual URL
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com', 
     siteName: BUSINESS_NAME,
-    // images: [ // Add a default image for social sharing
+    // images: [ 
     //   {
-    //     url: `${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`,
+    //     url: `${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`, // Consider adding a specific OG image
     //     width: 1200,
     //     height: 630,
     //     alt: BUSINESS_NAME,
