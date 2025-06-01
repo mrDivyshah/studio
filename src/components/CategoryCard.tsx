@@ -39,10 +39,10 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
           </div>
           <CardContent className="p-4 absolute bottom-0 left-0 right-0">
-            <CardTitle className="text-lg font-semibold text-white group-hover:text-primary transition-colors duration-300">
+            <CardTitle className="text-lg font-semibold text-white group-hover:text-primary transition-colors duration-500 ease-in-out [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
               {category.name}
             </CardTitle>
-            <div className="flex items-center text-sm text-primary-foreground/80 group-hover:text-primary transition-colors duration-300 mt-1 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0">
+            <div className="flex items-center text-sm text-primary-foreground/80 group-hover:text-primary transition-colors duration-500 ease-in-out mt-1 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0">
               Explore <ArrowRight className="ml-1 h-4 w-4" />
             </div>
           </CardContent>
@@ -53,3 +53,4 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
 };
 
 export default CategoryCard;
+
