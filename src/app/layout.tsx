@@ -7,6 +7,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { BUSINESS_NAME, BUSINESS_SLOGAN } from '@/lib/constants';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
+import NextTopLoader from 'nextjs-toploader';
 
 
 export const metadata: Metadata = {
@@ -55,7 +56,18 @@ export default function RootLayout({
           <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet" />
         </head>
         <body className="font-body antialiased bg-background text-foreground">
-            {children}
+          <NextTopLoader
+            color="#F9A87A" // Corresponds to your primary color hsl(25 90% 68%)
+            initialPosition={0.08}
+            crawlSpeed={200}
+            height={3}
+            crawl={true}
+            showSpinner={false}
+            easing="ease"
+            speed={200}
+            shadow="0 0 10px #F9A87A,0 0 5px #F9A87A"
+          />
+          {children}
           <Toaster />
           <SpeedInsights />
           <Analytics />
@@ -73,6 +85,17 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased flex flex-col min-h-screen bg-background">
+        <NextTopLoader
+          color="#F9A87A" // Corresponds to your primary color hsl(25 90% 68%)
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px #F9A87A,0 0 5px #F9A87A"
+        />
         <Header />
         <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
           {children}
@@ -85,4 +108,3 @@ export default function RootLayout({
     </html>
   );
 }
-
