@@ -22,6 +22,11 @@ const nextConfig: NextConfig = {
       // or migrate them to be served locally or through another provider.
     ],
   },
+  experimental: {
+    allowedDevOrigins: [
+      'https://6000-firebase-studio-1748748973338.cluster-nzwlpk54dvagsxetkvxzbvslyi.cloudworkstations.dev',
+    ],
+  },
 };
 
 export default nextConfig;
